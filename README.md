@@ -42,7 +42,8 @@ Alternatively, you can run a single command within the virtual environment (with
 
 ## Application Configuration / Secrets
 
-We are using the `.env` file to store our secrets and some application configuration values.
+We are using the `.env` file to store our secrets and some application configuration values. Per the `.gitignore` file, the `.env` file will not be included in any git commmits or uploaded to github. 
+
 The [`python-dotenv`](https://github.com/theskumar/python-dotenv) package we installed will parse this file when the application starts and load the variables inside the file as system environment variables.  Then the python code can access them with [`os.environ.get(...)`](https://docs.python.org/3.8/library/os.html#os.environ).
 
 
