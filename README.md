@@ -10,11 +10,12 @@ To edit it, first download [readme/diagram.drawio.png](readme/diagram.drawio.png
 
 # How to set up this application locally
 
-## Packages
 
-We're using a tool called [pipenv](https://pipenv.pypa.io/en/latest/index.html) to create/manage a python virtual environment for the app. 
+## Python Packages
 
-The virtual environment allows the python package dependencies to be installed in thier own little world separate from whatever packages might be installed globally on the developer's workstation. It prevents python package dependency version conflicts and helps the application setup stay repeatable in the future as python packages change. 
+We're using a tool called [pipenv](https://pipenv.pypa.io/en/latest/index.html) to create/manage a python virtual environment for the app.
+
+The virtual environment allows the python package dependencies to be installed in thier own little world separate from whatever packages might be installed globally on the developer's workstation. It prevents python package dependency version conflicts and helps the application setup stay repeatable in the future as python packages change.
 
 First, make sure that you are using the [`pip`](https://packaging.python.org/en/latest/key_projects/#pip) that is associated with python 3, not python 3:
 
@@ -33,24 +34,55 @@ Finally, you should be able to install all of the package dependencies for the p
 
 ## Virtual Environment
 
-Once the packages are installed, you are ready to enter the virtual environment and start working on the app! 
+Once the packages are installed, you are ready to enter the virtual environment and start working on the app!
 
-The `pipenv shell` command will enter into a new shell session within the virtual environment. 
+The `pipenv shell` command will enter into a new shell session within the virtual environment.
 
 Alternatively, you can run a single command within the virtual environment (without modifying your current shell session) with `pipenv run <your command here>`
 
 ## Application Configuration / Secrets
 
-We are using the `.env` file to store our secrets and some application configuration values. 
+We are using the `.env` file to store our secrets and some application configuration values.
 The [`python-dotenv`](https://github.com/theskumar/python-dotenv) package we installed will parse this file when the application starts and load the variables inside the file as system environment variables.  Then the python code can access them with [`os.environ.get(...)`](https://docs.python.org/3.8/library/os.html#os.environ).
 
-## Running the Application 
+Here is what your `.env` file should look like:
 
-If you are already in the virtual environment: 
+```
+ACCOUNT_SID="ACq398hgbuiblahblahblahblahblahblah"
+AUTH_TOKEN="kii923ggbuiblahblahblahblahblahblah"
+TEXTLINE_NUMBER="+17633632275"
+```
+
+## Database
+
+`sudo apt install postgresql`
+
+`sudo systemctl start postgresql.service`
+
+`sudo systemctl status postgresql.service`
+
+```
+$ sudo -u postgres psql
+psql (12.12 (Ubuntu 12.12-0ubuntu0.20.04.1))
+Type "help" for help.
+
+postgres=# create database "depottextline";
+CREATE DATABASE
+postgres=# create user "depottextline" WITH PASSWORD 'blah';
+CREATE ROLE
+postgres=# grant all privileges on database "depottextline" to "depottextline";
+GRANT
+postgres=# quit
+
+```
+
+## Running the Application
+
+If you are already in the virtual environment:
 
 `flask --app app run`
 
-Otherwise: 
+Otherwise:
 
 
 `pipenv run flask --app app run`
