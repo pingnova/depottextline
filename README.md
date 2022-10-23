@@ -49,7 +49,7 @@ The [`python-dotenv`](https://github.com/theskumar/python-dotenv) package we ins
 
 Twilio offers a service where our application can be notified every time someone sends an SMS message to the text line. 
 
-This recieve-sms service [works via Webhook](https://www.twilio.com/docs/sms/tutorials/how-to-receive-and-reply-python).  That means that Twilio sends an HTTP request to our application.  Here's Twilio's own diagram of how this works: 
+This receive-sms service [works via Webhook](https://www.twilio.com/docs/sms/tutorials/how-to-receive-and-reply-python).  That means that Twilio sends an HTTP request to our application.  Here's Twilio's own diagram of how this works: 
 
 ![](readme/twilio_webhook.png)
 
