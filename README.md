@@ -58,9 +58,11 @@ When we run the server application during development, it's not reachable over t
 In order to solve this problem, we're currently using forest's [greenhouse](https://greenhouse-alpha.server.garden/) cloud service. 
 
   1. Sign up for a greenhouse account
-  2. Install greenhouse on your computer
-  3. Configure a greenhouse HTTPS tunnel to `http://localhost:5000`
-  3. Log into the Twilio administration console and set the SMS messaging Webhook URL to whatever your greenhouse tunnel URL is, plus `/receive_sms` at the end, like so:
+  1. Install greenhouse on your computer
+  1. Make sure that the depottextline app is running on your computer and you can access it at  `http://localhost:5000`
+  1. Configure a greenhouse HTTPS tunnel to `http://localhost:5000`
+  1. Make sure you can reach the depottextline app at your greenhouse tunnel URL, for example `https://textline.demo.greenhouseusers.com/`
+  1. Log into the Twilio administration console and set the SMS messaging Webhook URL to whatever your greenhouse tunnel URL is, plus `/receive_sms` at the end, like so:
 
 ![](readme/twilio_webhook_setup.png)
 
