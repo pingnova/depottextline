@@ -2,7 +2,10 @@
 Text application for Supply Depot
 
 
-![](diagram.drawio.png)
+![](readme/diagram.drawio.png)
+
+This diagram was created with https://app.diagrams.net/.
+To edit it, first download [readme/diagram.drawio.png](readme/diagram.drawio.png),  open the https://app.diagrams.net/ web application, and open the PNG file you downloaded.
 
 
 # How to set up this application locally
