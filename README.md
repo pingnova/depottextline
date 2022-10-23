@@ -2,6 +2,8 @@
 Text application for Supply Depot
 
 
+![](diagram.drawio.png)
+
 
 # How to set up this application locally
 
