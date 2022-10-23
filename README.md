@@ -2,6 +2,11 @@
 Text application for Supply Depot
 
 
+![](readme/diagram.drawio.png)
+
+This diagram was created with https://app.diagrams.net/.
+To edit it, first download [readme/diagram.drawio.png](readme/diagram.drawio.png),  open the https://app.diagrams.net/ web application, and open the PNG file you downloaded.
+
 
 # How to set up this application locally
 
@@ -39,3 +44,13 @@ Alternatively, you can run a single command within the virtual environment (with
 We are using the `.env` file to store our secrets and some application configuration values. 
 The [`python-dotenv`](https://github.com/theskumar/python-dotenv) package we installed will parse this file when the application starts and load the variables inside the file as system environment variables.  Then the python code can access them with [`os.environ.get(...)`](https://docs.python.org/3.8/library/os.html#os.environ).
 
+## Running the Application 
+
+If you are already in the virtual environment: 
+
+`flask --app app run`
+
+Otherwise: 
+
+
+`pipenv run flask --app app run`
