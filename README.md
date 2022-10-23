@@ -45,28 +45,7 @@ Alternatively, you can run a single command within the virtual environment (with
 We are using the `.env` file to store our secrets and some application configuration values.
 The [`python-dotenv`](https://github.com/theskumar/python-dotenv) package we installed will parse this file when the application starts and load the variables inside the file as system environment variables.  Then the python code can access them with [`os.environ.get(...)`](https://docs.python.org/3.8/library/os.html#os.environ).
 
-## Twilio Webhooks Setup
 
-Twilio offers a service where our application can be notified every time someone sends an SMS message to the text line. 
-
-This receive-sms service [works via Webhook](https://www.twilio.com/docs/sms/tutorials/how-to-receive-and-reply-python).  That means that Twilio sends an HTTP request to our application.  Here's Twilio's own diagram of how this works: 
-
-![](readme/twilio_webhook.png)
-
-When we run the server application during development, it's not reachable over the network or the internet, we can only connect to it locally.  So of course, Twilio can't connect to our app from thier servers.
-
-In order to solve this problem, we're currently using forest's [greenhouse](https://greenhouse-alpha.server.garden/) cloud service. 
-
-  1. Sign up for a greenhouse account
-  1. Install greenhouse on your computer
-  1. Make sure that the depottextline app is running on your computer and you can access it at  `http://localhost:5000`
-  1. Configure a greenhouse HTTPS tunnel to `http://localhost:5000`
-  1. Make sure you can reach the depottextline app at your greenhouse tunnel URL, for example `https://textline.demo.greenhouseusers.com/`
-  1. Log into the Twilio administration console and set the SMS messaging Webhook URL to whatever your greenhouse tunnel URL is, plus `/receive_sms` at the end, like so:
-
-![](readme/twilio_webhook_setup.png)
-
-## Running the Application 
 Here is what your `.env` file should look like:
 
 ```
@@ -109,3 +88,26 @@ Otherwise:
 `pipenv run flask --app app run`
 
 Then you should be able to load it up in your web browser at `http://127.0.0.1:5000`
+
+
+
+## Twilio Webhooks Setup
+
+Twilio offers a service where our application can be notified every time someone sends an SMS message to the text line. 
+
+This receive-sms service [works via Webhook](https://www.twilio.com/docs/sms/tutorials/how-to-receive-and-reply-python).  That means that Twilio sends an HTTP request to our application.  Here's Twilio's own diagram of how this works: 
+
+![](readme/twilio_webhook.png)
+
+When we run the server application during development, it's not reachable over the network or the internet, we can only connect to it locally.  So of course, Twilio can't connect to our app from thier servers.
+
+In order to solve this problem, we're currently using forest's [greenhouse](https://greenhouse-alpha.server.garden/) cloud service. 
+
+  1. Sign up for a greenhouse account
+  1. Install greenhouse on your computer
+  1. Make sure that the depottextline app is running on your computer and you can access it at  `http://localhost:5000`
+  1. Configure a greenhouse HTTPS tunnel to `http://localhost:5000`
+  1. Make sure you can reach the depottextline app at your greenhouse tunnel URL, for example `https://textline.demo.greenhouseusers.com/`
+  1. Log into the Twilio administration console and set the SMS messaging Webhook URL to whatever your greenhouse tunnel URL is, plus `/receive_sms` at the end, like so:
+
+![](readme/twilio_webhook_setup.png)
