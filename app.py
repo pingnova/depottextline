@@ -1,5 +1,6 @@
 from flask import Flask
 import send_sms
+import receive_sms
 import os
 
 app = Flask(__name__)
@@ -13,6 +14,7 @@ app.config.from_mapping(
 )
 
 app.register_blueprint(send_sms.bp)
+app.register_blueprint(receive_sms.bp)
 
 
 @app.route("/")
