@@ -44,6 +44,21 @@ Alternatively, you can run a single command within the virtual environment (with
 We are using the `.env` file to store our secrets and some application configuration values. 
 The [`python-dotenv`](https://github.com/theskumar/python-dotenv) package we installed will parse this file when the application starts and load the variables inside the file as system environment variables.  Then the python code can access them with [`os.environ.get(...)`](https://docs.python.org/3.8/library/os.html#os.environ).
 
+## Twilio Webhooks Setup
+
+Twilio offers a service where our application can be notified every time someone sends an SMS message to the text line. 
+
+This recieve-sms service [works via Webhook](https://www.twilio.com/docs/sms/tutorials/how-to-receive-and-reply-python).  That means that Twilio sends an HTTP request to our application.  Here's Twilio's own diagram of how this works: 
+
+![](readme/twilio_webhook.png)
+
+When we run the server application during development, it's not reachable over the network or the internet, we can only connect to it locally.  So of course, Twilio can't connect to our app from thier servers.
+
+In order to solve this problem, we're currently using forest's [greenhouse](https://greenhouse-alpha.server.garden/) cloud service. 
+
+
+
+
 ## Running the Application 
 
 If you are already in the virtual environment: 
@@ -52,5 +67,6 @@ If you are already in the virtual environment:
 
 Otherwise: 
 
-
 `pipenv run flask --app app run`
+
+Then you should be able to load it up in your web browser at `http://127.0.0.1:5000`
