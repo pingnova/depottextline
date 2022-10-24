@@ -5,8 +5,9 @@ from flask import Flask
 from logging.config import dictConfig as logging_dict_config
 
 import db
-import send_sms
+# import send_sms
 import receive_sms
+import api
 
 app = Flask(__name__)
 
@@ -44,11 +45,13 @@ logging_dict_config({
 
 db.init_app(app)
 
-app.register_blueprint(send_sms.bp)
+# app.register_blueprint(send_sms.bp)
 app.register_blueprint(receive_sms.bp)
+app.register_blueprint(api.bp)
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return app.send_static_file("frontend-build/index.html")
 
 
-@app.route("/")
-def hello_world():
-    conversations = db.get_model().list_conversations()
-    return json.dumps(conversations, indent=4, sort_keys = True, default = str)

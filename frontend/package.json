@@ -1,0 +1,32 @@
+{
+  "name": "depottextline",
+  "version": "0.0.0",
+  "description": "Frontend app for Depot Text Line",
+  "source": "public/index.html",
+  "scripts": {
+    "start": "parcel --dist-dir ../frontend-build/ --port 3000 --open",
+    "build": "parcel build --dist-dir ../frontend-build/"
+  },
+  "license": "GPL3",
+  "dependencies": {
+    "preact": "^10.11.2"
+  },
+  "devDependencies": {
+    "parcel": "^2.7.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "alias": {
+    "preact/jsx-dev-runtime": "preact/jsx-runtime"
+  }
+}
