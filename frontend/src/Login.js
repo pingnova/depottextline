@@ -43,7 +43,7 @@ function Login(props) {
     } else {
       fetchLoginAPI("/auth/login", {token})
         .then(responseObject => {
-          if(responseObject.id && responseObject.name) {
+          if(responseObject.id && (responseObject.email || responseObject.phoneNumber)) {
             const loggedInAccount = responseObject
             session.logIn(loggedInAccount);
           } else {
@@ -66,7 +66,7 @@ function Login(props) {
 
 
   return (
-    <div className="login-container">
+    <div className="login-container grow">
     <div className="login-form">
       <h1>Login</h1>
 

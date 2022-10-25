@@ -40,7 +40,7 @@ function Conversation(props) {
       ).then(() => {
         setMessages([{
           body: reply,
-          incoming: false,
+          sentBy: session.account?.name || "",
           date: new Date(),
         }].concat(messages))
         setReply("");
@@ -86,12 +86,12 @@ function Conversation(props) {
   }, [messages]);
 
   return (
-    <div class="column">
-      <div class="row space-between">
+    <div class="column width100">
+      <div class="row space-between view-header">
         <div class="avatar-container clickable" onClick={() => route("/")}>
           <span class="large-text">←</span>
         </div>
-        <div class="avatar-container">
+        <div class="avatar-container left right">
           <div class="avatar">
             {getAvatar(name)}
           </div>
@@ -100,7 +100,7 @@ function Conversation(props) {
           <span>{beautifyPhoneNumber(props.remoteNumber)}</span>
         </div>
       </div>
-      <div class="grow column justify-start width100 chat-container" ref={scrollElement}>
+      <div class="grow column justify-start width100 view-body" ref={scrollElement}>
         <div class="chat">
           {messages.map((x, i) => (<div key={x.date}>
             {/* if */ (i < messages.length-1 && differentDays(messages[i+1].date, x.date)) && /* then */
@@ -108,8 +108,8 @@ function Conversation(props) {
                 {describeDay(x.date)}
               </div>
             }
-            <div class={`row ${x.incoming ? 'justify-start' : 'justify-end'}`}>
-              <div class={`chat-bubble ${x.incoming ? 'incoming' : ''}`}>
+            <div class={`row ${x.sentBy ?'justify-end' :  'justify-start'}`}>
+              <div class={`chat-bubble ${x.sentBy ?  '' : 'incoming'}`}>
                 {x.body}<br/>
                 <div class="small-text float-right">{formatTime(x.date)}</div>
               </div>

@@ -18,7 +18,7 @@ bp = Blueprint("auth", __name__, url_prefix="/auth")
 def account_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if session["account_id"] is None:
+        if "account_id" not in session:
           return jsonify({'error': f"Please login in order to view this"}), 401
         
         return view(**kwargs)
@@ -68,7 +68,7 @@ def login():
       session["account_id"] = account['id']
       session["name"] = account['name']
       session["admin"] = account['admin']
-      session["phone_number"] = account['phone_number']
+      session["phone_number"] = account['phoneNumber']
       session["email"] = account['email']
 
       return jsonify(account), 200

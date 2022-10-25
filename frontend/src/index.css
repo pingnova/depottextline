@@ -45,9 +45,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  padding-top: 0.7rem;
-  padding-left: 0.7rem;
-  padding-right: 0.7rem;
 }
 
 code {
@@ -58,7 +55,16 @@ code {
   height: 100%;
 }
 
+.view-header {
+  background-color: #d9d9d9;
 
+  padding: 0.7rem;
+}
+.view-body {
+  overflow-y: scroll;
+
+  padding: 0.7rem;
+}
 
 
 

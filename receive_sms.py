@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 
@@ -22,17 +24,17 @@ def receive_sms():
   remote_number = request.values.get('From', "")
 
   # We know this is an incoming message because twilio called our webhook
-  is_incoming_message = True
+  sent_by_account_id = None
 
   if sid == "" or remote_number == "" or body == "":
     return "Bad Request", 400
 
-  get_model().save_message(sid, remote_number, is_incoming_message, body)
+  get_model().save_message(sid, remote_number, sent_by_account_id, body)
 
   broker.publish({
     'type': "message",
     'remote_number': remote_number,
-    'incoming': True,
+    'sent_by_account_id': sent_by_account_id,
     'body': body,
     'date': datetime.utcnow()
   })

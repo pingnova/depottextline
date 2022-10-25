@@ -31,7 +31,7 @@ def setName():
   get_model().set_account_name(session['account_id'], request_body['name'])
   session['name'] = request_body['name']
 
-  presence_manager.update(account['id'], {
+  presence_manager.update(session['account_id'], {
     'name': request_body['name'],
     'location': "home",
   })
@@ -60,12 +60,12 @@ def send(remote_number):
     body=request_body["body"],
   )
 
-  get_model().save_message(message.sid, remote_number, False, request_body["body"])
+  get_model().save_message(message.sid, remote_number, session['account_id'], request_body["body"])
 
   broker.publish({
     'type': "message",
     'remote_number': remote_number,
-    'incoming': False,
+    'sentBy': session['name'],
     'body': request_body["body"],
     'date': datetime.utcnow()
   })

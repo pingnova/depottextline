@@ -46,7 +46,7 @@ def init_app(app):
   hasSchemaVersionTable = False
   actionWasTaken = False
   schemaVersion = 0
-  desiredSchemaVersion = 3
+  desiredSchemaVersion = 2
 
   cursor = connection.cursor()
 

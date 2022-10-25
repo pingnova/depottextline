@@ -1,6 +1,7 @@
 
 import json
 import queue
+from datetime import datetime
 
 from flask import Blueprint
 from flask.json import jsonify
@@ -61,7 +62,7 @@ broker = MessageBroker()
 presence_manager = PresenceManager(broker)
 
 # See https://maxhalford.github.io/blog/flask-sse-no-deps/
-@app.route('/stream', methods=['GET'])
+@bp.route('/stream', methods=['GET'])
 @account_required
 def server_sent_events_stream():
   def stream():

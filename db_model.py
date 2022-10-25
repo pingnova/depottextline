@@ -46,7 +46,7 @@ class DBModel:
 
     return token
 
-  def login(self, token, user_agent):
+  def login(self, token):
     self.cursor.execute("""
         SELECT account_id FROM login_tokens WHERE token = %s 
         and created > ((NOW() AT TIME ZONE 'utc') - INTERVAL '10 min')
@@ -74,7 +74,7 @@ class DBModel:
         'id': row[0],
         'name': row[1],
         'admin': row[2], 
-        'phone_number': row[3],
+        'phoneNumber': row[3],
         'email': row[4],
       }
 
@@ -83,12 +83,13 @@ class DBModel:
 
   def list_conversations(self):
     self.cursor.execute("""
-      SELECT name, remote_number, last_message_incoming, last_message_body, last_message_date
-      FROM remote_numbers ORDER BY last_message_date DESC;
+      SELECT remote_numbers.name, remote_number, accounts.name, last_message_body, last_message_date
+      FROM remote_numbers LEFT OUTER JOIN accounts on accounts.id = last_message_sent_by_account_id
+      ORDER BY last_message_date DESC;
     """)
 
     return list(map(
-      lambda x: dict(name=x[0], remote_number=x[1], incoming=x[2], body=x[3], date=x[4]),
+      lambda x: dict(name=x[0], remote_number=x[1], sentBy=x[2], body=x[3], date=x[4]),
       self.cursor.fetchall()
     ))
 
@@ -98,7 +99,8 @@ class DBModel:
 
   def list_messages(self, remote_number):
     self.cursor.execute("""
-        SELECT incoming, body, created FROM messages
+        SELECT accounts.name, body, messages.created FROM messages
+        LEFT OUTER JOIN accounts on sent_by_account_id = accounts.id
         WHERE remote_number = %s
         ORDER BY created DESC;
       """,
@@ -106,7 +108,7 @@ class DBModel:
     )
 
     return list(map(
-      lambda x: dict(incoming=x[0], body=x[1], date=x[2]),
+      lambda x: dict(sentBy=x[0], body=x[1], date=x[2]),
       self.cursor.fetchall()
     ))
 
@@ -119,29 +121,29 @@ class DBModel:
     return dict(name=row[0])
 
 
-  def save_message(self, sid, remote_number, incoming, body):
+  def save_message(self, sid, remote_number, sent_by_account_id, body):
 
     self.cursor.execute("SELECT remote_number FROM remote_numbers WHERE remote_number = %s", (remote_number, ))
     if not self.cursor.fetchone():
       self.cursor.execute("""
-        INSERT INTO remote_numbers (remote_number, name, last_message_incoming, last_message_body) 
+        INSERT INTO remote_numbers (remote_number, name, last_message_sent_by_account_id, last_message_body) 
         VALUES (%s, %s, %s, %s)
         """,
-        (remote_number, "", incoming, body)
+        (remote_number, "", sent_by_account_id, body)
       )
     else:
       self.cursor.execute("""
-          UPDATE remote_numbers SET last_message_incoming = %s, last_message_body = %s, 
+          UPDATE remote_numbers SET last_message_sent_by_account_id = %s, last_message_body = %s, 
             last_message_date = (NOW() AT TIME ZONE 'utc')
           WHERE remote_number = %s
         """,
-        (incoming, body, remote_number)
+        (sent_by_account_id, body, remote_number)
       )
 
     self.cursor.execute("""
-        INSERT INTO messages (sid, remote_number, incoming, body) VALUES (%s, %s, %s, %s)
+        INSERT INTO messages (sid, remote_number, sent_by_account_id, body) VALUES (%s, %s, %s, %s)
       """,
-      (sid, remote_number, incoming, body)
+      (sid, remote_number, sent_by_account_id, body)
     )
 
     self.connection.commit()

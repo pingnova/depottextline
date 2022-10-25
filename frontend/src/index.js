@@ -9,54 +9,64 @@ import Conversation from './Conversation.js';
 import Login from './Login.js';
 
 const originalAccountString = window.localStorage.getItem('depot-text-line-account');
-const originalAccount = null;
+let originalAccount = null;
 if(originalAccountString != null && originalAccountString != "") {
   originalAccount = JSON.parse(originalAccountString)
 }
 
 const Main = () => {
-  const [account, setAccount] = useState(originalAccount);
+
   const [loading, setLoading] = useState(0);
   const [flashMessage, setFlashMessage] = useState("");
 
-  const sessionObject = {
-    account,
+  let sessionObject;
+  let setSessionObject;
+  const originalSessionObject = {
+    account: originalAccount,
     logIn: (account) => {
       window.localStorage.setItem('depot-text-line-account', JSON.stringify(account));
-      setAccount(account);
-      route("/");
+      sessionObject.account = account
+      setSessionObject(sessionObject);
+      if(window.location.pathname != "/") {
+        route("/");
+      }
     },
     logOut: (message) => {
       window.localStorage.setItem('depot-text-line-account', "");
-      setAccount(null);
+      sessionObject.account = null
+      setSessionObject(sessionObject);
       setFlashMessage(message);
       route("/login");
     }, 
+    authenticatedFetch: (url, options, displayLoader) => {
+      if(displayLoader) {
+        sessionObject.pushLoading()
+      }
+      const toReturn = fetch(url, options)
+        .then(response => {
+          return response.json().then(responseObject => {
+            if(response.status == 401) {
+              sessionObject.logOut(responseObject.error || "Please log in to view this")
+            }
+            return responseObject;
+          })
+        })
+  
+      if(displayLoader) {
+        toReturn = toReturn.finally(() => sessionObject.popLoading());
+      }
+      return toReturn;
+    },
     pushLoading: () => setLoading(loading+1),
     popLoading: () => {
       setLoading(loading > 0 ? loading-1 : 0);
       setFlashMessage("");
     },
   };
-  sessionObject.authenticatedFetch = (url, options, displayLoader) => {
-    if(displayLoader) {
-      sessionObject.pushLoading()
-    }
-    const toReturn = fetch(url, options)
-      .then(response => {
-        return response.json().then(responseObject => {
-          if(response.status == 401) {
-            sessionObject.logOut(responseObject.error || "Please log in to view this")
-          }
-          return responseObject;
-        })
-      })
 
-    if(displayLoader) {
-      toReturn = toReturn.finally(() => sessionObject.popLoading());
-    }
-    return toReturn;
-  }
+  const sessionUseState = useState(originalSessionObject);
+  sessionObject = sessionUseState[0];
+  setSessionObject = sessionUseState[1];
 
   return (
     <SessionContext.Provider value={sessionObject}>

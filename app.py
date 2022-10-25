@@ -25,6 +25,8 @@ app.config.from_mapping(
   LOG_LEVEL=os.environ.get("LOG_LEVEL", default="INFO"),
   BASE_URL=os.environ.get("BASE_URL", default="http://localhost:5000"),
   NAME_OF_APP=os.environ.get("NAME_OF_APP", default="Depot Text Line"),
+  SECRET_KEY=os.environ.get("SECRET_KEY", default="changeme!"),
+
 
   ACCOUNT_SID=os.environ.get("ACCOUNT_SID", default=""),
   AUTH_TOKEN=os.environ.get("AUTH_TOKEN", default=""),
