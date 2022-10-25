@@ -12,7 +12,6 @@ function Conversation(props) {
   const [name, setName] = useState("");
   const session = useContext(SessionContext);
 
-  const chatElement = useRef(null);
   const scrollElement = useRef(null);
 
   // useEffect takes 2 arguments: the effect function and the dependencies
@@ -79,6 +78,7 @@ function Conversation(props) {
     return dateString
   };
 
+  // whenever new messages are loaded, scroll to the bottom of the page!
   useEffect(() => {
     setTimeout(() => {
       if (scrollElement.current) scrollElement.current.scrollTop = scrollElement.current.scrollHeight;
@@ -101,9 +101,9 @@ function Conversation(props) {
         </div>
       </div>
       <div class="grow column justify-start width100 chat-container" ref={scrollElement}>
-        <div class="chat" ref={chatElement}>
+        <div class="chat">
           {messages.map((x, i) => (<div key={x.date}>
-            {(i < messages.length-1 && differentDays(messages[i+1].date, x.date)) &&
+            {/* if */ (i < messages.length-1 && differentDays(messages[i+1].date, x.date)) && /* then */
               <div class="row justify-center small-text">
                 {describeDay(x.date)}
               </div>
