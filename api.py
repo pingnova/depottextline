@@ -25,7 +25,7 @@ def list_conversations():
 @account_required
 def setName():
   request_body = request.json
-  if 'name' not in request_body:
+  if 'name' not in request_body or not request_body['name']:
     return jsonify({'error': "'name' field is required"}), 400
 
   get_model().set_account_name(session['account_id'], request_body['name'])
