@@ -8,6 +8,8 @@ twilio = "*"
 flask = "*"
 python-dotenv = "*"
 psycopg2-binary = "*"
+flask-mail = "*"
+nanoid = "*"
 
 [dev-packages]
 

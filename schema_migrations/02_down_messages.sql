@@ -1,3 +1,3 @@
 DROP TABLE messages;
 
-INSERT INTO schemaversion(version) VALUES (1);
+UPDATE schemaversion SET version = 1;

@@ -112,3 +112,26 @@ In order to solve this problem, we're currently using forest's [greenhouse](http
   1. Log into the Twilio administration console and set the SMS messaging Webhook URL to whatever your greenhouse tunnel URL is, plus `/receive_sms` at the end, like so:
 
 ![](readme/twilio_webhook_setup.png)
+
+
+## SMTP (ability to send email) Setup
+
+Ability to send email is optional.
+
+Add this to your `.env` file:
+
+```
+# smtp.. see https://flask-mail.readthedocs.io/en/latest/#configuring-flask-mail
+MAIL_SERVER="smtp.nullhex.com"
+
+# MAIL_USE_SSL means SMTP with STARTTLS
+MAIL_USE_SSL=true
+
+# MAIL_USE_TLS means SMTP wrapped in TLS
+MAIL_USE_TLS=false
+
+MAIL_PORT="465"
+MAIL_USERNAME="textlinelogins@nullhex.com"
+MAIL_PASSWORD="XXXXXXXXXXXXXXXXX"
+MAIL_DEFAULT_SENDER="textlinelogins@nullhex.com"
+```

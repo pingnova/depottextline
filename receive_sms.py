@@ -1,7 +1,6 @@
 from flask import Blueprint, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 
-
 from db import get_model
 
 
@@ -23,6 +22,9 @@ def receive_sms():
 
     # We know this is an incoming message because twilio called our webhook
     is_incoming_message = True
+
+    if sid == "" or remote_number == "" or body == "":
+      return "Bad Request", 400
 
     get_model().save_message(sid, remote_number, is_incoming_message, body)
 
@@ -63,22 +65,3 @@ def receive_sms():
 # AccountSid=ACd821b6c2559271dd8c5b474ac5daae85
 # From=+11231234567
 # ApiVersion=2010-04-01
-
-
-# # You could access this route in the web browser at  http://localhost:5000/send_sms/+61212345678
-# @bp.route("/<string:send_to_phone_number>", methods=("GET", "POST"))
-# def detail(send_to_phone_number):
-
-#     # Your Account SID from twilio.com/console. app.py loads this from the .env file
-#     account_sid = current_app.config["ACCOUNT_SID"]
-#     # Your Auth Token from twilio.com/console.  app.py loads this from the .env file
-#     auth_token  = current_app.config["AUTH_TOKEN"]
-
-#     client = Client(account_sid, auth_token)
-
-#     message = client.messages.create(
-#         to=send_to_phone_number,
-#         from_=current_app.config["TEXTLINE_NUMBER"],
-#         body="Hello from Python!")
-
-#     return message.sid

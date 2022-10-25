@@ -4,4 +4,4 @@ Frontend using [Preact](https://preactjs.com) with [Parcel](https://parceljs.org
 
 ## Credits
 
-This was based on "Preact Boilerplate" by [Safdar Jamal](https://safdarjamal.github.io).
+This was based on [github.com/SafdarJamal/preact-boilerplate](https://github.com/SafdarJamal/preact-boilerplate) by [Safdar Jamal](https://safdarjamal.github.io).
