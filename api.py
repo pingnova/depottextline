@@ -1,6 +1,6 @@
 import re
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from twilio.rest import Client
 from flask import current_app, session, request, Blueprint
@@ -31,10 +31,10 @@ def setName():
   get_model().set_account_name(session['account_id'], request_body['name'])
   session['name'] = request_body['name']
 
-  presence_manager.update(session['account_id'], {
-    'name': request_body['name'],
-    'location': "home",
-  })
+  # presence_manager.update(session['account_id'], {
+  #   'name': request_body['name'],
+  #   'location': "home",
+  # })
 
   return jsonify({'ok': True}), 200
 
@@ -64,10 +64,10 @@ def send(remote_number):
 
   broker.publish({
     'type': "message",
-    'remote_number': remote_number,
+    'remoteNumber': remote_number,
     'sentBy': session['name'],
     'body': request_body["body"],
-    'date': datetime.utcnow()
+    'date': datetime.now(timezone.utc)
   })
 
   current_app.logger.debug(f"sent message to {remote_number}: sid: {message.sid}")

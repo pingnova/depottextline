@@ -3,6 +3,7 @@ import { route } from 'preact-router';
 
 import './Conversation.css';
 import SessionContext from './SessionContext';
+import EventHub from './EventHub';
 import { getAvatar, beautifyPhoneNumber, getTimeSince, keyEventHandlerFor } from './uiFunctions.js';
 
 function Conversation(props) {
@@ -13,6 +14,7 @@ function Conversation(props) {
   const session = useContext(SessionContext);
 
   const scrollElement = useRef(null);
+  const textInputElement = useRef(null);
 
   // useEffect takes 2 arguments: the effect function and the dependencies
   // useEffect will fire the effect function every time one of the dependencies changes
@@ -21,8 +23,21 @@ function Conversation(props) {
     session.authenticatedFetch(`/api/conversations/${props.remoteNumber}`).then(responseObject => {
       setMessages(responseObject.messages.map(x => ({...x, date: new Date(x.date)})));
       setName(responseObject.name);
+      textInputElement.current?.focus();
     })
   }, [props.remoteNumber]);
+
+  EventHub.subscriptions.ConversationsList = {
+    'message': (eventData) => {
+      if(eventData.remoteNumber == props.remoteNumber) {
+        setMessages([{
+          body: eventData.body,
+          sentBy: eventData.sentBy,
+          date: new Date(eventData.date),
+        }].concat(messages))
+      }
+    }
+  };
 
   const sendMessage = (e) => {
     if(e && e.preventDefault) {
@@ -40,7 +55,7 @@ function Conversation(props) {
       ).then(() => {
         setMessages([{
           body: reply,
-          sentBy: session.account?.name || "",
+          sentBy: session.account?.name || "Anonymous",
           date: new Date(),
         }].concat(messages))
         setReply("");
@@ -81,7 +96,9 @@ function Conversation(props) {
   // whenever new messages are loaded, scroll to the bottom of the page!
   useEffect(() => {
     setTimeout(() => {
-      if (scrollElement.current) scrollElement.current.scrollTop = scrollElement.current.scrollHeight;
+      if (scrollElement.current) {
+        scrollElement.current.scrollTop = scrollElement.current.scrollHeight;
+      }
     }, 10)
   }, [messages]);
 
@@ -111,7 +128,7 @@ function Conversation(props) {
             <div class={`row ${x.sentBy ?'justify-end' :  'justify-start'}`}>
               <div class={`chat-bubble ${x.sentBy ?  '' : 'incoming'}`}>
                 {x.body}<br/>
-                <div class="small-text float-right">{formatTime(x.date)}</div>
+                <div class="small-text float-right">{x.sentBy}{x.sentBy && <> &nbsp;</>}{formatTime(x.date)}</div>
               </div>
             </div>
           </div>))}
@@ -120,7 +137,7 @@ function Conversation(props) {
       <div class="row reply-form">
         <form onSubmit={sendMessage} class="grow">
           <input class="message-input" type="text" placeholder={"SMS Message"}
-                 value={reply} onInput={keyEventHandlerFor(setReply)}>
+                 ref={textInputElement} value={reply} onInput={keyEventHandlerFor(setReply)}>
           </input>
         </form>
 

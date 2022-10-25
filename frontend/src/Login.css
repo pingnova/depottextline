@@ -4,7 +4,7 @@
   width: 100%;
   align-items: center;
   justify-content: center;
-  margin-bottom: 33%;
+  margin-bottom: calc(20vh - 20rem);
 }
 
 .login-form {

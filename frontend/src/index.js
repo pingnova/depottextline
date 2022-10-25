@@ -4,6 +4,7 @@ import { useState } from 'preact/hooks';
 
 import './index.css';
 import SessionContext from './SessionContext.js'
+import EventHub from './EventHub';
 import ConversationsList from './ConversationsList.js';
 import Conversation from './Conversation.js';
 import Login from './Login.js';
@@ -47,6 +48,9 @@ const Main = () => {
           return response.json().then(responseObject => {
             if(response.status == 401) {
               sessionObject.logOut(responseObject.error || "Please log in to view this")
+            } else {
+              // as soon as we know the user is logged in, we can start consuming the event stream
+              EventHub.startStreamingIfNotAlreadyStarted();
             }
             return responseObject;
           })

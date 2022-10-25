@@ -89,7 +89,7 @@ class DBModel:
     """)
 
     return list(map(
-      lambda x: dict(name=x[0], remote_number=x[1], sentBy=x[2], body=x[3], date=x[4]),
+      lambda x: dict(name=x[0], remoteNumber=x[1], sentBy=x[2], body=x[3], date=x[4]),
       self.cursor.fetchall()
     ))
 

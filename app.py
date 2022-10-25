@@ -10,6 +10,7 @@ import db
 import receive_sms
 import api_auth
 import api
+import api_server_sent_events
 
 class StdoutMockFlaskMail:
   def send(self, message: Message):
@@ -81,6 +82,7 @@ db.init_app(app)
 app.register_blueprint(receive_sms.bp)
 app.register_blueprint(api_auth.bp)
 app.register_blueprint(api.bp)
+app.register_blueprint(api_server_sent_events.bp)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

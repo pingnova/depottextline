@@ -3,6 +3,7 @@ import { route } from 'preact-router';
 
 // its all in conversation.css
 // import './ConversationsList.css';
+import EventHub from './EventHub';
 import SessionContext from './SessionContext';
 import { getAvatar, beautifyPhoneNumber, getTimeSince } from './uiFunctions.js';
 
@@ -40,6 +41,21 @@ function ConversationsList() {
       })
   }, []);
 
+  EventHub.subscriptions.ConversationsList = {
+    'message': (eventData) => {
+      const matchingConversations = conversations.filter(x => x.remoteNumber == eventData.remoteNumber);
+      if(matchingConversations.length == 1) {
+        matchingConversations[0].sentBy = eventData.sentBy
+        matchingConversations[0].body = eventData.body
+        matchingConversations[0].date = eventData.date
+
+        setConversations(
+          matchingConversations.concat(conversations.filter(x => x.remoteNumber != eventData.remoteNumber))
+        )
+      }
+    }
+  }
+
   return (
     <div class="column width100">
       <div class="row space-between view-header">
@@ -57,7 +73,7 @@ function ConversationsList() {
 
       <div class="grow column justify-start width100 view-body">
       {conversations.map((x) => (
-        <div class="row space-between clickable conversation" onClick={() => route(`/${x.remote_number}/convo`)}>
+        <div class="row space-between clickable conversation" onClick={() => route(`/${x.remoteNumber}/convo`)}>
           <div class="avatar-container left">
             <div class="avatar">
               {getAvatar(x)}
@@ -65,7 +81,7 @@ function ConversationsList() {
           </div>
           <div class="grow">
             <div class="row space-between align-start">
-              <span>{beautifyPhoneNumber(x.remote_number)}</span>
+              <span>{beautifyPhoneNumber(x.remoteNumber)}</span>
               <span class="small-text">{getTimeSince(x.date)}</span>
             </div>
             <div class="row space-between align-start">
