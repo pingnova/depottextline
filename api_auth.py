@@ -23,7 +23,7 @@ def account_required(view):
         session_id = authorization_header.replace("Bearer", "").strip()
         if session_id == "":
           return jsonify({'error': f"Please login in order to view this"}), 401
-        elif not get_account_from_session():
+        elif not get_account_from_request():
           return jsonify({'error': f"Invalid session. Please login again in order to view this"}), 401
         
         return view(**kwargs)
@@ -31,12 +31,17 @@ def account_required(view):
     return wrapped_view
 
 # convenience function used to grab the account for the current session
-def get_account_from_session():
+def get_account_from_request():
   authorization_header = request.headers.get('Authorization')
+  if authorization_header == None:
+    return None
   session_id = authorization_header.replace("Bearer", "").strip()
   if session_id == "":
     return None
 
+  return get_account_for_session(session_id)
+
+def get_account_for_session(session_id):
   if session_id in current_app.config["SESSION_CACHE"]:
     cached_account = current_app.config["SESSION_CACHE"][session_id]
     if datetime.now() < cached_account["expires"]:
@@ -82,12 +87,12 @@ def login():
 
     # if the user provided us a token, then they are confirming their identity and creating a new session
     if 'token' in request_body:
-      token = request_body['token']
+      token = request_body['token'].strip()
       session_id = get_model().login(token, request.headers.get('User-Agent'))
       if not session_id:
         return jsonify({'error': f"invalid login token"}), 400
 
-      account = get_account_from_session(session_id)
+      account = get_account_for_session(session_id)
       account['sessionId'] = session_id
       return jsonify(account), 200
     

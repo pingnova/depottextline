@@ -5,7 +5,7 @@ CREATE TABLE messages (
   body TEXT NOT NULL,
   remote_number TEXT NOT NULL,
   incoming BOOLEAN NOT NULL,
-  created  TIMESTAMP NOT NULL DEFAULT NOW()
+  created  TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
 
 

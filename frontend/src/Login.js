@@ -1,19 +1,16 @@
+import { useState, useEffect, useContext } from 'preact/hooks';
+
 import './Login.css';
 import SessionContext from './SessionContext';
-import { useState, useEffect, useContext } from 'preact/hooks';
+import {keyEventHandlerFor} from './uiFunctions.js'
 
 function Login(props) {
 
   const [identity, setIdentity] = useState("");
   const [token, setToken] = useState(props.token);
   const [sentTokenMessage, setSentTokenMessage] = useState("");
-  const [promptForToken, setPromptForToken] = useState(false);
+  const [promptForToken, setPromptForToken] = useState(props.token);
   const session = useContext(SessionContext);
-
-  const keyEventHandlerFor = (setter) => (e) => {
-    const { value } = e.target;
-    setter(value)
-  };
 
   const fetchLoginAPI = (url, body) => {
     session.pushLoading()
@@ -27,7 +24,10 @@ function Login(props) {
       .finally(() => session.popLoading())
   }
 
-  const login = () => {
+  const login = (e) => {
+    if(e && e.preventDefault) {
+      e.preventDefault();
+    }
     
     if(!promptForToken) {
       fetchLoginAPI("/auth/get_login_token", {identity})
@@ -44,7 +44,7 @@ function Login(props) {
       fetchLoginAPI("/auth/login", {token})
         .then(responseObject => {
           if(responseObject.sessionId) {
-            loggedInAccount = responseObject
+            const loggedInAccount = responseObject
             session.logIn(loggedInAccount.sessionId, loggedInAccount.name);
           } else {
             session.logOut(responseObject.error || "Unknown Login Error")
@@ -66,7 +66,8 @@ function Login(props) {
 
 
   return (
-    <div className="Login">
+    <div className="login-container">
+    <div className="login-form">
       <h1>Login</h1>
 
       {/*  This is an if-else-statement  */}
@@ -83,14 +84,17 @@ function Login(props) {
       {/*  In fact, the entire statement (true && etc...) will return whatever etc... is, it won't return boolean true. */}
       {/*  JavaScript statements evaluating to "false-ish" inside the JSX will be simply dropped or omitted by React*/}
       
+      <form onSubmit={login}>
       {promptForToken && 
         <div>
           <p>
             {sentTokenMessage}
           </p>
           <div className="form row">
+            <div class="grow"></div>
             <label for="token">Login Token:</label>
             <input type="text" id="token" value={token} onInput={keyEventHandlerFor(setToken)} ></input>
+            <div class="grow"></div>
           </div>
         </div>
       }
@@ -98,14 +102,18 @@ function Login(props) {
         <div>
           <p>If you do not already have an account, one will be created for you.</p>
           <div className="form row">
+            <div class="grow"></div>
             <label for="identity">Email or Phone #:</label>
             <input type="text" id="identity" value={identity} onInput={keyEventHandlerFor(setIdentity)} ></input>
+            <div class="grow"></div>
           </div>
         </div>
       }
       <div className="form row">
         <button onClick={login}> Log In </button>
       </div>
+      </form>
+    </div>
     </div>
   );
 }

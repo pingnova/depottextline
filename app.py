@@ -87,7 +87,8 @@ def catch_all(path):
 
     # app.logger.info(path)
 
-    if "." in path and "/" not in path:
+    if "." in path and "/" not in path and os.path.exists("frontend-build/"+path):
+
       return send_file("frontend-build/"+path)
     else:
       return send_file("frontend-build/index.html")

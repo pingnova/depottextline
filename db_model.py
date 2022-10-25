@@ -31,7 +31,12 @@ class DBModel:
     else:
       account_id = row[0]
 
-    self.cursor.execute("SELECT token FROM login_tokens WHERE account_id = %s and created > (NOW() - INTERVAL '10 min')", (account_id, ))
+    self.cursor.execute("""
+        SELECT token FROM login_tokens WHERE account_id = %s 
+        and created > ((NOW() AT TIME ZONE 'utc') - INTERVAL '10 min')
+      """, 
+      (account_id, )
+    )
     if len(self.cursor.fetchall()) > 5:
       return None
 
@@ -43,7 +48,8 @@ class DBModel:
 
   def login(self, token, user_agent):
     self.cursor.execute("""
-        SELECT account_id FROM login_tokens WHERE token = %s and created > (NOW() - INTERVAL '10 min')
+        SELECT account_id FROM login_tokens WHERE token = %s 
+        and created > ((NOW() AT TIME ZONE 'utc') - INTERVAL '10 min')
       """, 
       (token, )
     )
@@ -52,7 +58,7 @@ class DBModel:
       account_id = row[0]
       session_id = generate(alphabet="123456789qwertyupasdfghjkzxcvbnm", size=32)
       self.cursor.execute("DELETE FROM login_tokens WHERE account_id = %s", (account_id, ))
-      self.cursor.execute("UPDATE accounts SET last_login = NOW() WHERE id = %s", (account_id, ))
+      self.cursor.execute("UPDATE accounts SET last_login = (NOW() AT TIME ZONE 'utc') WHERE id = %s", (account_id, ))
       self.cursor.execute(
         """
           INSERT INTO sessions (account_id, session_id, user_agent) VALUES (%s, %s, %s)
@@ -97,6 +103,23 @@ class DBModel:
       lambda x: dict(remote_number=x[0], incoming=x[1], body=x[2], last_message=x[3]),
       self.cursor.fetchall()
     ))
+
+  def list_messages(self, remote_number):
+    self.cursor.execute("""
+        SELECT incoming, body, created FROM messages
+        WHERE remote_number = %s
+        ORDER BY created DESC;
+      """,
+      (remote_number, )
+    )
+
+    return list(map(
+      lambda x: dict(incoming=x[0], body=x[1], date=x[2]),
+      self.cursor.fetchall()
+    ))
+
+  # def get_profile(self, remote_number):
+
 
   def save_message(self, sid, remote_number, incoming, body):
     self.cursor.execute("""
