@@ -46,7 +46,6 @@ app.config.from_mapping(
 )
 
 app.config["TWILIO_CLIENT"] = Client(app.config["ACCOUNT_SID"], app.config["AUTH_TOKEN"])
-app.config["SESSION_CACHE"] = dict()
 
 if app.config['MAIL_SERVER'] != "":
   app.config['FLASK_MAIL_INSTANCE'] = Mail(app)

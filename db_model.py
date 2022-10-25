@@ -14,7 +14,7 @@ class DBModel:
 
   def get_login_token(self, lower_case_email, canonicalized_phone_number):
     self.cursor.execute("""
-      SELECT id, name, admin FROM accounts WHERE lower_case_email = %s or canonicalized_phone_number = %s
+      SELECT id FROM accounts WHERE lower_case_email = %s or canonicalized_phone_number = %s
       """,
       (lower_case_email, canonicalized_phone_number)
     )
@@ -40,7 +40,7 @@ class DBModel:
     if len(self.cursor.fetchall()) > 5:
       return None
 
-    token = generate(alphabet="1234567890", size=5)
+    token = generate(alphabet="1234567890", size=6)
     self.cursor.execute("INSERT INTO login_tokens (account_id, token) VALUES (%s, %s)", (account_id, token))
     self.connection.commit()
 
@@ -56,53 +56,45 @@ class DBModel:
     row = self.cursor.fetchone()
     if row:
       account_id = row[0]
-      session_id = generate(alphabet="123456789qwertyupasdfghjkzxcvbnm", size=32)
       self.cursor.execute("DELETE FROM login_tokens WHERE account_id = %s", (account_id, ))
       self.cursor.execute("UPDATE accounts SET last_login = (NOW() AT TIME ZONE 'utc') WHERE id = %s", (account_id, ))
-      self.cursor.execute(
-        """
-          INSERT INTO sessions (account_id, session_id, user_agent) VALUES (%s, %s, %s)
-        """, 
-        (account_id, session_id, user_agent)
-      )
       self.connection.commit()
-      return session_id
+
+      self.cursor.execute("""
+          SELECT id, name, admin, canonicalized_phone_number, lower_case_email 
+          FROM accounts WHERE id = %s
+        """,
+        (account_id, )
+      )
+      row = self.cursor.fetchone()
+      if not row:
+        return None
+        
+      return {
+        'id': row[0],
+        'name': row[1],
+        'admin': row[2], 
+        'phone_number': row[3],
+        'email': row[4],
+      }
 
     return None
 
-  def get_account_for_session(self, session_id):
-    self.cursor.execute("""
-        SELECT id, name, admin, canonicalized_phone_number, lower_case_email FROM accounts
-        JOIN sessions ON sessions.account_id = accounts.id
-        WHERE sessions.session_id = %s
-      """,
-      (session_id, )
-    )
-    row = self.cursor.fetchone()
-
-    if not row:
-      return None
-    
-    return {
-      'id': row[0],
-      'name': row[1],
-      'admin': row[2], 
-      'phone_number': row[3],
-      'email': row[4],
-    }
 
   def list_conversations(self):
     self.cursor.execute("""
-      SELECT DISTINCT on (remote_number)
-        remote_number, incoming, body, created
-      FROM messages
-      ORDER BY remote_number, created DESC;
+      SELECT name, remote_number, last_message_incoming, last_message_body, last_message_date
+      FROM remote_numbers ORDER BY last_message_date DESC;
     """)
 
     return list(map(
-      lambda x: dict(remote_number=x[0], incoming=x[1], body=x[2], last_message=x[3]),
+      lambda x: dict(name=x[0], remote_number=x[1], incoming=x[2], body=x[3], date=x[4]),
       self.cursor.fetchall()
     ))
+
+  def set_account_name(self, account_id, name):
+    self.cursor.execute("UPDATE accounts SET name = %s WHERE id = %s", (name, account_id))
+    self.connection.commit()
 
   def list_messages(self, remote_number):
     self.cursor.execute("""
@@ -118,13 +110,38 @@ class DBModel:
       self.cursor.fetchall()
     ))
 
-  # def get_profile(self, remote_number):
+  def get_remote_number_profile(self, remote_number):
+    self.cursor.execute("SELECT name FROM remote_numbers WHERE remote_number = %s", (remote_number, ))
+    row = self.cursor.fetchone()
+    if not row:
+      return None
+
+    return dict(name=row[0])
 
 
   def save_message(self, sid, remote_number, incoming, body):
+
+    self.cursor.execute("SELECT remote_number FROM remote_numbers WHERE remote_number = %s", (remote_number, ))
+    if not self.cursor.fetchone():
+      self.cursor.execute("""
+        INSERT INTO remote_numbers (remote_number, name, last_message_incoming, last_message_body) 
+        VALUES (%s, %s, %s, %s)
+        """,
+        (remote_number, "", incoming, body)
+      )
+    else:
+      self.cursor.execute("""
+          UPDATE remote_numbers SET last_message_incoming = %s, last_message_body = %s, 
+            last_message_date = (NOW() AT TIME ZONE 'utc')
+          WHERE remote_number = %s
+        """,
+        (incoming, body, remote_number)
+      )
+
     self.cursor.execute("""
-      INSERT INTO messages (sid, remote_number, incoming, body) VALUES (%s, %s, %s, %s)
-    """,
-    (sid, remote_number, incoming, body))
+        INSERT INTO messages (sid, remote_number, incoming, body) VALUES (%s, %s, %s, %s)
+      """,
+      (sid, remote_number, incoming, body)
+    )
 
     self.connection.commit()

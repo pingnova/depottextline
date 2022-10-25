@@ -1,12 +1,14 @@
 import re
 import json
+from datetime import datetime
 
 from twilio.rest import Client
-from flask import current_app, request, Blueprint
+from flask import current_app, session, request, Blueprint
 from flask.json import jsonify
 
 from db import get_model
 from api_auth import account_required
+from api_server_sent_events import broker, presence_manager
 
 
 # a Blueprint is a collection of routes under a certain prefix or "folder" on the http server
@@ -19,12 +21,30 @@ def list_conversations():
     conversations = get_model().list_conversations()
     return jsonify(conversations)
 
+@bp.route("/setName", methods=['POST'])
+@account_required
+def setName():
+  request_body = request.json
+  if 'name' not in request_body:
+    return jsonify({'error': "'name' field is required"}), 400
+
+  get_model().set_account_name(session['account_id'], request_body['name'])
+  session['name'] = request_body['name']
+
+  presence_manager.update(account['id'], {
+    'name': request_body['name'],
+    'location': "home",
+  })
+
+  return jsonify({'ok': True}), 200
+
 @bp.route("/conversations/<string:remote_number>", methods=['GET'])
 @account_required
 def list_messages(remote_number):
     messages = get_model().list_messages(remote_number)
-    # TODO remote number profiles and names
-    return jsonify({'messages': messages, 'name': ""})
+    remote_number_profile = get_model().get_remote_number_profile(remote_number)
+    return jsonify({'messages': messages, 'name': remote_number_profile['name']})
+
 
 
 @bp.route("/send/<string:remote_number>", methods=['POST'])
@@ -42,10 +62,17 @@ def send(remote_number):
 
   get_model().save_message(message.sid, remote_number, False, request_body["body"])
 
+  broker.publish({
+    'type': "message",
+    'remote_number': remote_number,
+    'incoming': False,
+    'body': request_body["body"],
+    'date': datetime.utcnow()
+  })
+
   current_app.logger.debug(f"sent message to {remote_number}: sid: {message.sid}")
 
   return jsonify({'ok': True}), 200
-
 
 
 @bp.errorhandler(500)

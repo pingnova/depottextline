@@ -43,9 +43,9 @@ function Login(props) {
     } else {
       fetchLoginAPI("/auth/login", {token})
         .then(responseObject => {
-          if(responseObject.sessionId) {
+          if(responseObject.id && responseObject.name) {
             const loggedInAccount = responseObject
-            session.logIn(loggedInAccount.sessionId, loggedInAccount.name);
+            session.logIn(loggedInAccount);
           } else {
             session.logOut(responseObject.error || "Unknown Login Error")
           }

@@ -8,27 +8,27 @@ import ConversationsList from './ConversationsList.js';
 import Conversation from './Conversation.js';
 import Login from './Login.js';
 
-const originalSessionId = window.localStorage.getItem('depot-text-line-session-id');
-const originalUsername = window.localStorage.getItem('depot-text-line-username');
+const originalAccountString = window.localStorage.getItem('depot-text-line-account');
+const originalAccount = null;
+if(originalAccountString != null && originalAccountString != "") {
+  originalAccount = JSON.parse(originalAccountString)
+}
 
 const Main = () => {
-  const [sessionId, setSessionId] = useState(originalSessionId);
-  const [username, setUsername] = useState(originalUsername);
+  const [account, setAccount] = useState(originalAccount);
   const [loading, setLoading] = useState(0);
   const [flashMessage, setFlashMessage] = useState("");
 
   const sessionObject = {
-    username,
-    logIn: (sessionId, username) => {
-      window.localStorage.setItem('depot-text-line-session-id', sessionId);
-      window.localStorage.setItem('depot-text-line-username', username);
-      setSessionId(sessionId);
-      setUsername(username);
+    account,
+    logIn: (account) => {
+      window.localStorage.setItem('depot-text-line-account', JSON.stringify(account));
+      setAccount(account);
       route("/");
     },
     logOut: (message) => {
-      setSessionId("");
-      setUsername("");
+      window.localStorage.setItem('depot-text-line-account', "");
+      setAccount(null);
       setFlashMessage(message);
       route("/login");
     }, 
@@ -42,15 +42,11 @@ const Main = () => {
     if(displayLoader) {
       sessionObject.pushLoading()
     }
-    options = options || {};
-    options.headers = options.headers || {};
-    options.headers['Authorization'] = `Bearer ${sessionId || ""}`;
     const toReturn = fetch(url, options)
       .then(response => {
         return response.json().then(responseObject => {
           if(response.status == 401) {
-            setFlashMessage(responseObject.error)
-            route("/login");
+            sessionObject.logOut(responseObject.error || "Please log in to view this")
           }
           return responseObject;
         })

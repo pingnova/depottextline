@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 
 from twilio.rest import Client
-from flask import current_app, request, Blueprint
+from flask import current_app, request, session, Blueprint
 from flask.json import jsonify
 from flask_mail import Message
 
@@ -14,52 +14,23 @@ from db import get_model
 # a Blueprint is a collection of routes under a certain prefix or "folder" on the http server
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-
 # This is a custom Flask route annotation that allows us to easily mark API routes as requiring a login
 def account_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        authorization_header = request.headers.get('Authorization')
-        session_id = authorization_header.replace("Bearer", "").strip()
-        if session_id == "":
+        if session["account_id"] is None:
           return jsonify({'error': f"Please login in order to view this"}), 401
-        elif not get_account_from_request():
-          return jsonify({'error': f"Invalid session. Please login again in order to view this"}), 401
         
         return view(**kwargs)
 
     return wrapped_view
 
-# convenience function used to grab the account for the current session
-def get_account_from_request():
-  authorization_header = request.headers.get('Authorization')
-  if authorization_header == None:
-    return None
-  session_id = authorization_header.replace("Bearer", "").strip()
-  if session_id == "":
-    return None
-
-  return get_account_for_session(session_id)
-
-def get_account_for_session(session_id):
-  if session_id in current_app.config["SESSION_CACHE"]:
-    cached_account = current_app.config["SESSION_CACHE"][session_id]
-    if datetime.now() < cached_account["expires"]:
-      return cached_account
-
-  account = get_model().get_account_for_session(session_id)
-  if not account:
-    return None
-  else:
-    account["expires"] = datetime.now() + timedelta(minutes=1)
-    current_app.config["SESSION_CACHE"][session_id] = account
-    return account
-
-
 
 @bp.route("/get_login_token", methods=['POST'])
 def get_login_token():
     request_body = request.json
+
+    session.clear()
 
     # if the user provided us an identity, then they are asking us to send them a login token
     if 'identity' in request_body:
@@ -88,12 +59,18 @@ def login():
     # if the user provided us a token, then they are confirming their identity and creating a new session
     if 'token' in request_body:
       token = request_body['token'].strip()
-      session_id = get_model().login(token, request.headers.get('User-Agent'))
-      if not session_id:
+      account = get_model().login(token)
+
+      if not account:
         return jsonify({'error': f"invalid login token"}), 400
 
-      account = get_account_for_session(session_id)
-      account['sessionId'] = session_id
+      session.clear()
+      session["account_id"] = account['id']
+      session["name"] = account['name']
+      session["admin"] = account['admin']
+      session["phone_number"] = account['phone_number']
+      session["email"] = account['email']
+
       return jsonify(account), 200
     
     # if no token given, return an error (this indicates a bug in the frontend)
