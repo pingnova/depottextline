@@ -103,9 +103,9 @@ function Conversation(props) {
       <div class="grow column justify-start width100 chat-container" ref={scrollElement}>
         <div class="chat" ref={chatElement}>
           {messages.map((x, i) => (<div key={x.date}>
-            {(i > 0 && differentDays(messages[i-1].date, x.date)) &&
+            {(i < messages.length-1 && differentDays(messages[i+1].date, x.date)) &&
               <div class="row justify-center small-text">
-                {describeDay(messages[i-1].date)}
+                {describeDay(x.date)}
               </div>
             }
             <div class={`row ${x.incoming ? 'justify-start' : 'justify-end'}`}>
