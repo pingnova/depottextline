@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'preact/hooks';
 
 import './Login.css';
-import SessionContext from './SessionContext';
+import { SessionContext } from './Session';
 import {keyEventHandlerFor} from './uiFunctions.js'
 
 function Login(props) {

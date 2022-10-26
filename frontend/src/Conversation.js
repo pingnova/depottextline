@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useRef } from 'preact/hooks';
 import { route } from 'preact-router';
 
 import './Conversation.css';
-import SessionContext from './SessionContext';
+import { SessionContext } from './Session';
 import EventHub from './EventHub';
 import Avatar from './Avatar';
 import {  beautifyPhoneNumber, getTimeSince, keyEventHandlerFor } from './uiFunctions.js';
@@ -102,6 +102,10 @@ function Conversation(props) {
       }
     }, 10)
   }, [messages]);
+
+  if(!session?.account?.id) {
+    return "..."
+  }
 
   return (
     <div class="column width100">

@@ -4,7 +4,7 @@ import { route } from 'preact-router';
 // its all in conversation.css
 // import './ConversationsList.css';
 import EventHub from './EventHub';
-import SessionContext from './SessionContext';
+import { SessionContext } from './Session';
 import Avatar from './Avatar';
 import {  beautifyPhoneNumber, getTimeSince } from './uiFunctions.js';
 
@@ -17,8 +17,7 @@ function ConversationsList() {
   // useEffect will fire the effect function every time one of the dependencies changes
   // here there are no dependencies, so it will fire the function once when the component mounts
   useEffect(() => {
-    session.authenticatedFetch("/api/conversations")
-      .then(setConversations)
+    session.authenticatedFetch("/api/conversations").then(setConversations)
   }, []);
 
   EventHub.subscriptions.ConversationsList = {
@@ -34,6 +33,10 @@ function ConversationsList() {
         )
       }
     }
+  }
+
+  if(!session?.account?.id) {
+    return "..."
   }
 
   return (
