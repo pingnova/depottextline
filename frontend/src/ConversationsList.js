@@ -5,7 +5,8 @@ import { route } from 'preact-router';
 // import './ConversationsList.css';
 import EventHub from './EventHub';
 import SessionContext from './SessionContext';
-import { getAvatar, beautifyPhoneNumber, getTimeSince } from './uiFunctions.js';
+import Avatar from './Avatar';
+import {  beautifyPhoneNumber, getTimeSince } from './uiFunctions.js';
 
 function ConversationsList() {
 
@@ -62,23 +63,19 @@ function ConversationsList() {
 
         <div class="row space-between grow">
           <span>Depot Text Line</span>
-          <span>{session.account?.name || "Anonymous"}</span>
+          <span class="double-spaced clickable" onClick={promptForUsername}>
+            {session.account?.name || "Anonymous"}
+          </span>
         </div> 
-        <div class="avatar-container right">
-          <div class="avatar clickable" onClick={promptForUsername}>
-            {getAvatar(session.account?.name || "")}
-          </div>
+        <div class="clickable" onClick={promptForUsername}>
+          <Avatar className="right" name={session.account?.name || ""} identityForColor={session.account?.id || ""}/>
         </div>
       </div>
 
       <div class="grow column justify-start width100 view-body">
       {conversations.map((x) => (
         <div class="row space-between clickable conversation" onClick={() => route(`/${x.remoteNumber}/convo`)}>
-          <div class="avatar-container left">
-            <div class="avatar">
-              {getAvatar(x)}
-            </div>
-          </div>
+          <Avatar className="left" name={x.name} identityForColor={x.remoteNumber}/>
           <div class="grow">
             <div class="row space-between align-start">
               <span>{beautifyPhoneNumber(x.remoteNumber)}</span>

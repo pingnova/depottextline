@@ -101,8 +101,7 @@ class DBModel:
     self.cursor.execute("""
         SELECT accounts.name, body, messages.created FROM messages
         LEFT OUTER JOIN accounts on sent_by_account_id = accounts.id
-        WHERE remote_number = %s
-        ORDER BY created DESC;
+        WHERE remote_number = %s ORDER BY created DESC;
       """,
       (remote_number, )
     )

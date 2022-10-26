@@ -4,7 +4,8 @@ import { route } from 'preact-router';
 import './Conversation.css';
 import SessionContext from './SessionContext';
 import EventHub from './EventHub';
-import { getAvatar, beautifyPhoneNumber, getTimeSince, keyEventHandlerFor } from './uiFunctions.js';
+import Avatar from './Avatar';
+import {  beautifyPhoneNumber, getTimeSince, keyEventHandlerFor } from './uiFunctions.js';
 
 function Conversation(props) {
 
@@ -108,11 +109,7 @@ function Conversation(props) {
         <div class="avatar-container clickable" onClick={() => route("/")}>
           <span class="large-text">←</span>
         </div>
-        <div class="avatar-container left right">
-          <div class="avatar">
-            {getAvatar(name)}
-          </div>
-        </div>
+        <Avatar className="left right" name={name} identityForColor={props.remoteNumber}/>
         <div class="grow">
           <span>{beautifyPhoneNumber(props.remoteNumber)}</span>
         </div>

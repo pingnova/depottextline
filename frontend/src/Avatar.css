@@ -1,0 +1,31 @@
+
+.avatar-container {
+}
+.avatar-container.right {
+  margin-left: 1rem;
+}
+.avatar-container.left {
+  margin-right: 1rem;
+}
+
+.avatar {
+  height: 2.6em;
+  width: 2.6em;
+  border-radius: 100%;
+  background-color: #ccc;
+  color: #555;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar .name {
+  font-size: 1.3em;
+  font-weight: 300;
+}
+
+.avatar img {
+  width: 1.5em;
+  height: 1.5em;
+}

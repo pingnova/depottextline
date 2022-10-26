@@ -1,26 +1,11 @@
-import anon_avatar from './anon.png';
+
 import Duration from 'duration';
+import tinycolor from 'tinycolor2';
 
 
 const keyEventHandlerFor = (setter) => (e) => {
   const { value } = e.target;
   setter(value)
-};
-
-const getAvatar = (conversation) => {
-  if(conversation.name) {
-    if(conversation.name.length < 3) {
-      return <span class="name">{conversation.name}</span>
-    } else {
-      names = conversation.name.trim().split(" ").map(x => x.trim()).filter(x => x.length)
-      if(names.length > 2) {
-        names = names.slice(0, 2);
-      }
-      return <span class="name">{names.map(x => x[0]).join("")}</span>
-    }
-  } else {
-    return <img src={anon_avatar}></img>
-  }
 };
 
 const beautifyPhoneNumber = (str) => {
@@ -46,9 +31,46 @@ const getTimeSince = (timeString) => {
 
 };
 
+
+function getRandomColor(id) {
+  const colorId = hashFnv32a(String(id))
+  const goldenRatio = 1.61803;
+  const nonCorrelatedSineFudgeFactor = 0.6934;
+  const fluctuation = Math.sin(nonCorrelatedSineFudgeFactor*colorId);
+  const slowFluctuation = Math.sin(nonCorrelatedSineFudgeFactor*goldenRatio*colorId);
+
+  const clamp01 = (x) => x > 1 ? 1 : (x < 0 ? 0 : x);
+
+  return tinycolor({ 
+    h: (goldenRatio * colorId * 360) % 360,
+    s: clamp01(0.3 + fluctuation*0.1),
+    v: clamp01(1 + slowFluctuation*0.15),
+  }).toHexString();
+};
+
+
+
+// https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+function hashFnv32a(str, asString, seed) {
+  /*jshint bitwise:false */
+  var i, l,
+      hval = (seed === undefined) ? 0x811c9dc5 : seed;
+
+  for (i = 0, l = str.length; i < l; i++) {
+      hval ^= str.charCodeAt(i);
+      hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
+  }
+  if( asString ){
+      // Convert to 8 digit hex string
+      return ("0000000" + (hval >>> 0).toString(16)).substr(-8);
+  }
+  return hval >>> 0;
+}
+
+
 export {
   keyEventHandlerFor,
-  getAvatar,
+  getRandomColor,
   beautifyPhoneNumber,
   getTimeSince,
 }
