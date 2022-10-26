@@ -20,44 +20,64 @@ const Main = () => {
   const [loading, setLoading] = useState(0);
   const [flashMessage, setFlashMessage] = useState("");
 
-  let sessionObject;
-  let setSessionObject;
+  let session;
+  let setSession;
   const originalSessionObject = {
     account: originalAccount,
     logIn: (account) => {
       window.localStorage.setItem('depot-text-line-account', JSON.stringify(account));
-      sessionObject.account = account
-      setSessionObject(sessionObject);
+      session.account = account
+      setSession(session);
       if(window.location.pathname != "/") {
         route("/");
       }
+      
     },
     logOut: (message) => {
       window.localStorage.setItem('depot-text-line-account', "");
-      sessionObject.account = null
-      setSessionObject(sessionObject);
+      session.account = null
+      setSession(session);
       setFlashMessage(message);
       route("/login");
     }, 
+    promptForUsername: () => {
+      let newName = "";
+      while (newName == "") {
+        newName = prompt("Enter your username (required)", "")
+      }
+      session.authenticatedFetch("/api/setName", {
+        method: "POST",
+        body: JSON.stringify({name: newName}),
+        headers:  {"Content-type": "application/json"}
+      }).then(() => {
+        session.account.name = newName;
+        session.logIn(session.account);
+      });
+    },
     authenticatedFetch: (url, options, displayLoader) => {
       if(displayLoader) {
-        sessionObject.pushLoading()
+        session.pushLoading()
       }
       const toReturn = fetch(url, options)
         .then(response => {
           return response.json().then(responseObject => {
             if(response.status == 401) {
-              sessionObject.logOut(responseObject.error || "Please log in to view this")
+              session.logOut(responseObject.error || "Please log in to view this")
             } else {
               // as soon as we know the user is logged in, we can start consuming the event stream
               EventHub.startStreamingIfNotAlreadyStarted();
+
+              // make sure the user sets thier username if not already done
+              if( !(session.account?.name || "") ) {
+                session.promptForUsername();
+              }
             }
             return responseObject;
           })
         })
   
       if(displayLoader) {
-        toReturn = toReturn.finally(() => sessionObject.popLoading());
+        toReturn = toReturn.finally(() => session.popLoading());
       }
       return toReturn;
     },
@@ -69,11 +89,11 @@ const Main = () => {
   };
 
   const sessionUseState = useState(originalSessionObject);
-  sessionObject = sessionUseState[0];
-  setSessionObject = sessionUseState[1];
+  session = sessionUseState[0];
+  setSession = sessionUseState[1];
 
   return (
-    <SessionContext.Provider value={sessionObject}>
+    <SessionContext.Provider value={session}>
       {flashMessage != "" && <div className="flash">{flashMessage}</div>}
       <Router>
         <ConversationsList path="/" />

@@ -13,33 +13,12 @@ function ConversationsList() {
   const [conversations, setConversations] = useState([]);
   const session = useContext(SessionContext);
 
-  const promptForUsername = () => {
-    let newName = "";
-    while (newName == "") {
-      newName = prompt("Enter your username (required)", "")
-    }
-    session.authenticatedFetch("/api/setName", {
-      method: "POST",
-      body: JSON.stringify({name: newName}),
-      headers:  {"Content-type": "application/json"}
-    }).then(() => {
-      session.account.name = newName;
-      session.logIn(session.account);
-    });
-  };
-
-
   // useEffect takes 2 arguments: the effect function and the dependencies
   // useEffect will fire the effect function every time one of the dependencies changes
   // here there are no dependencies, so it will fire the function once when the component mounts
   useEffect(() => {
     session.authenticatedFetch("/api/conversations")
       .then(setConversations)
-      .then(() => {
-        if( !(session.account?.name || "") ) {
-          promptForUsername();
-        }
-      })
   }, []);
 
   EventHub.subscriptions.ConversationsList = {
@@ -63,11 +42,11 @@ function ConversationsList() {
 
         <div class="row space-between grow">
           <span>Depot Text Line</span>
-          <span class="double-spaced clickable" onClick={promptForUsername}>
+          <span class="double-spaced clickable" onClick={session.promptForUsername}>
             {session.account?.name || "Anonymous"}
           </span>
         </div> 
-        <div class="clickable" onClick={promptForUsername}>
+        <div class="clickable" onClick={session.promptForUsername}>
           <Avatar className="right" name={session.account?.name || ""} identityForColor={session.account?.id || ""}/>
         </div>
       </div>

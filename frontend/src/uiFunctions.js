@@ -44,7 +44,7 @@ function getRandomColor(id) {
   return tinycolor({ 
     h: (goldenRatio * colorId * 360) % 360,
     s: clamp01(0.3 + fluctuation*0.1),
-    v: clamp01(1 + slowFluctuation*0.15),
+    v: clamp01(0.9 + slowFluctuation*0.15),
   }).toHexString();
 };
 

@@ -2,12 +2,13 @@
 .login-container {
   display: flex;
   width: 100%;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   margin-bottom: calc(20vh - 20rem);
 }
 
 .login-form {
+  margin: 2rem;
   border-radius: 2rem;
   border: 1px solid #444;
   max-width: 50rem;
