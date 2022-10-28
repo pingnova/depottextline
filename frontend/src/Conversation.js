@@ -44,7 +44,7 @@ function Conversation(props) {
         }].concat(events))
       }
     }
-  }
+  };
 
   useEffect(() => {
     // https://robertmarshall.dev/blog/componentwillunmount-functional-components-react/#componentwillunmount-in-useeffect

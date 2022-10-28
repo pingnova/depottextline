@@ -40,9 +40,10 @@ class MessageBroker:
       if subscriber['account_id'] != event_object['account_id']:
         try:
           subscriber['queue'].put_nowait(event_object)
-          current_app.logger.info(f"put_nowait() ok to: {str(subscriber['account_id'])}: {json.dumps(event_object, default=str)}")
+          # current_app.logger.info(f"put_nowait() ok to: {str(subscriber['account_id'])}: {json.dumps(event_object, default=str)}")
         except queue.Full:
-          current_app.logger.info(f"QUEUE FULL!! to: {str(subscriber['account_id'])}: {json.dumps(event_object, default=str)}")
+          current_app.logger.info(f"shutting down account #{str(subscriber['account_id'])}'s "
+                                   "SSE subscription because queue is full (they disconnected)")
           del self.subscriptions[i]
 
 # class PresenceManager:
@@ -112,7 +113,7 @@ def server_sent_events_stream():
     # return
 
     time.sleep(0.1)
-    yield 'data: {"type": "connected!"}\n\n'
+    yield 'data: {"type": "connected"}\n\n'
 
     queue = broker.subscribe(account_id)
     while True:
@@ -126,8 +127,14 @@ def server_sent_events_stream():
       # it "sleeps" the current thread of execution temporarily.
       # Yield makes this stream() function a "generator"
       # which is python-ese for "thing which can be iterated asynchronously"
-      logger.info(f"yield msg {msg}")
+
+      #logger.info(f"yield msg {msg}")
       yield msg
+
+      # for some reason when the app is behind nginx, it always lags 1 event behind 
+      # on the HTTP response. So I just send a bogus event after every real event. WTF.
+      time.sleep(0.1)
+      yield 'data: {"type": "flush"}\n\n'
 
   return Response(stream(current_app.logger, session['account_id']), mimetype='text/event-stream')
 
