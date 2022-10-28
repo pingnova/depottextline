@@ -7,15 +7,12 @@ import shareImage from './share.png'
 import EventHub from './EventHub';
 import { SessionContext } from './Session';
 import Avatar from './Avatar';
-import { ModalContext } from './Modal.js'
-import TextInputModal from './TextInputModal.js'
 import {  beautifyPhoneNumber, getTimeSince } from './uiFunctions.js';
 
 function ConversationsList() {
 
   const [conversations, setConversations] = useState([]);
   const session = useContext(SessionContext);
-  const modal = useContext(ModalContext);
 
 
   EventHub.subscriptions.ConversationsList = {
@@ -52,22 +49,16 @@ function ConversationsList() {
   }, []);
 
   const share = () => {
-    TextInputModal(modal, {
-      title: "Invite Another User",
-      inputLabel: "Phone # / Email Address",
-      initialValue: ""
-    })
-    .then((identity) => {
-      if(identity) {
-        session.authenticatedFetch("/auth/get_login_token", {
-          method: "POST",
-          body: JSON.stringify({identity}),
-          headers:  {"Content-type": "application/json"}
-        }, true).then(() => {
-          alert(`${identity} has been invited!`)
-        });
-      }
-    })
+    const identity = prompt("Invite Another User: Enter Phone # / Email Address", "").trim()
+    if(identity) {
+      session.authenticatedFetch("/auth/get_login_token", {
+        method: "POST",
+        body: JSON.stringify({identity}),
+        headers:  {"Content-type": "application/json"}
+      }, true).then(() => {
+        alert(`${identity} has been invited!`)
+      });
+    }
   };
 
   if(!session?.account?.id) {

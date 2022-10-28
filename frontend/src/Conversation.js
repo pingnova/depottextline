@@ -6,7 +6,6 @@ import { SessionContext } from './Session';
 import EventHub from './EventHub';
 import Avatar from './Avatar';
 import { ModalContext } from './Modal.js'
-import TextInputModal from './TextInputModal.js'
 import ConversationStatusModal from './ConversationStatusModal.js'
 import {  beautifyPhoneNumber, getTimeSince, inputHandlerFor } from './uiFunctions.js';
 
@@ -77,22 +76,16 @@ function Conversation(props) {
   };
 
   const contactProfileModal = () => {
-    TextInputModal(modal, {
-      title: `Contact Profile for ${props.remoteNumber}`,
-      inputLabel: "Name",
-      initialValue: name || ""
-    })
-    .then((newName) => {
-      if(newName) {
-        session.authenticatedFetch(`/api/conversations/${props.remoteNumber}/name`, {
-          method: "POST",
-          body: JSON.stringify({name: newName}),
-          headers:  {"Content-type": "application/json"}
-        }, true).then(() => {
-          setName(newName);
-        });
-      }
-    });
+    const newName = window.prompt(`Enter a Name for ${props.remoteNumber}`,  name || "").trim()
+    if(newName) {
+      session.authenticatedFetch(`/api/conversations/${props.remoteNumber}/name`, {
+        method: "POST",
+        body: JSON.stringify({name: newName}),
+        headers:  {"Content-type": "application/json"}
+      }, true).then(() => {
+        setName(newName);
+      });
+    }
   };
 
   const statusModal = () => {

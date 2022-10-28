@@ -4,8 +4,6 @@ import { route } from 'preact-router';
 import { useState, useContext } from 'preact/hooks';
 
 import EventHub from './EventHub.js'
-import { ModalContext } from './Modal.js'
-import TextInputModal from './TextInputModal.js'
 
 const SessionContext = createContext();
 
@@ -18,7 +16,6 @@ if(originalAccountString != null && originalAccountString != "") {
 
 function SessionContextComponent({loading, setLoading, setFlashMessage, children}) {
    
-  const modal = useContext(ModalContext);
   
   let session, setSession;
   const originalSessionObject = {
@@ -38,25 +35,17 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
       route("/login");
     }, 
     promptForUsername: () => {
-      TextInputModal(modal, {
-        title: "Your Profile",
-        description: "Please Set your Username",
-        inputLabel: "Username",
-        initialValue: session.account?.name || ""
-      })
-      .then((newName) => {
-        if(newName) {
-          session.authenticatedFetch("/api/setName", {
-            method: "POST",
-            body: JSON.stringify({name: newName}),
-            headers:  {"Content-type": "application/json"}
-          }, true).then(() => {
-            session.account.name = newName;
-            session.logIn(session.account);
-          });
-        }
-
-      })
+      const newName = prompt("Your Profile: Please Set your Username", session.account?.name || "").trim()
+      if(newName) {
+        session.authenticatedFetch("/api/setName", {
+          method: "POST",
+          body: JSON.stringify({name: newName}),
+          headers:  {"Content-type": "application/json"}
+        }, true).then(() => {
+          session.account.name = newName;
+          session.logIn(session.account);
+        });
+      }
 
     },
     authenticatedFetch: (url, options, displayLoader) => {
