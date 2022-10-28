@@ -2,7 +2,7 @@
   
 name="depottextline"
 directory="/opt/depottextline"
-command="pipenv run flask run"
+command="/opt/depottextline/start.sh"
 output_log=/home/cyberian/depottextline.log
 error_log=/home/cyberian/depottextline.log
 pidfile="/var/run/depottextline.pid"
