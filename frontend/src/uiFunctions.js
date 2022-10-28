@@ -27,7 +27,12 @@ const getTimeSince = (timeString) => {
   // 10y 2m 6d 3h 23m 8s 456ms
   const longDurationString = duration.toString(1);
 
-  return longDurationString.split(" ")[0];
+  const shortDurationString = longDurationString.split(" ")[0];
+  if(shortDurationString.endsWith("ms")) {
+    return "now"
+  }
+
+  return shortDurationString;
 
 };
 
