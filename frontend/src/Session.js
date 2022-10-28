@@ -63,7 +63,7 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
       if(displayLoader) {
         session.pushLoading()
       }
-      let toReturn = fetch(url, options)
+      let toReturn = (options ? fetch(url, options) : fetch(url))
         .then(response => {
           return response.json().then(responseObject => {
             if(response.status == 401) {
