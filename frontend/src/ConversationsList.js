@@ -33,6 +33,14 @@ function ConversationsList() {
         setConversations(
           matchingConversations.concat(conversations.filter(x => x.remoteNumber != eventData.remoteNumber))
         )
+      } else {
+        setConversations(
+          [{
+            ...eventData,
+            name: eventData.name || "",
+            status: eventData.status || "new",
+          }].concat(conversations)
+        )
       }
     }
   };
