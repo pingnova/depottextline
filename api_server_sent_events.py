@@ -1,4 +1,5 @@
 
+import time
 import json
 import queue
 from datetime import datetime, timezone
@@ -101,7 +102,13 @@ def server_sent_events_stream():
     # ))
     # yield "".join(messages)
 
-    yield 'data: {"type": "connected!"}\n\n'
+    i = 0
+    while i < 5:
+      i += 1
+      time.sleep(1)
+      yield 'data: {"type": "connected!"}\n\n'
+
+    return
 
     while True:
       # Blocks until a new message arrives
