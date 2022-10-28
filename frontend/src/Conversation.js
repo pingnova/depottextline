@@ -26,7 +26,7 @@ function Conversation(props) {
   // useEffect will fire the effect function every time one of the dependencies changes
   // here there are no dependencies, so it will fire the function once when the component mounts
   useEffect(() => {
-    session.authenticatedFetch(`/api/conversations/${props.remoteNumber}`, true).then(responseObject => {
+    session.authenticatedFetch(`/api/conversations/${props.remoteNumber}`, null,  true).then(responseObject => {
       setEvents(responseObject.events.map(x => ({...x, date: new Date(x.date)})));
       setName(responseObject.name);
       setStatus(responseObject.status);
