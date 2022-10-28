@@ -42,47 +42,47 @@ class MessageBroker:
         except queue.Full:
           del self.subscriptions[i]
 
-class PresenceManager:
-  def __init__(self, broker):
-      self.presence = dict()
-      self.broker = broker
+# class PresenceManager:
+#   def __init__(self, broker):
+#       self.presence = dict()
+#       self.broker = broker
 
-  def update(self, account_id, data):
-    if account_id not in self.presence:
-      self.presence[account_id] = data
-    else:
-      for key in data:
-        self.presence[account_id][key] = data[key]
+#   def update(self, account_id, data):
+#     if account_id not in self.presence:
+#       self.presence[account_id] = data
+#     else:
+#       for key in data:
+#         self.presence[account_id][key] = data[key]
       
-    self.presence[account_id]['date'] = datetime.now(timezone.utc)
+#     self.presence[account_id]['date'] = datetime.now(timezone.utc)
     
-    event = { 'type': "presence", 'account_id': account_id }
-    for key in self.presence[account_id]:
-      event[key] = self.presence[account_id][key]
+#     event = { 'type': "presence", 'account_id': account_id }
+#     for key in self.presence[account_id]:
+#       event[key] = self.presence[account_id][key]
 
-    self.broker.publish(event)
+#     self.broker.publish(event)
 
-  def get_all_as_events(self, subscriber_account_id):
-    events = []
-    for account_id in self.presence:
+#   def get_all_as_events(self, subscriber_account_id):
+#     events = []
+#     for account_id in self.presence:
 
-      # only send the presence events of others
-      if account_id != subscriber_account_id:
-        event = { 'type': "presence", 'account_id': account_id }
-        account_presence = self.presence[account_id]
-        for key in account_presence:
-          event[key] = account_presence[key]
+#       # only send the presence events of others
+#       if account_id != subscriber_account_id:
+#         event = { 'type': "presence", 'account_id': account_id }
+#         account_presence = self.presence[account_id]
+#         for key in account_presence:
+#           event[key] = account_presence[key]
         
-        events.append(event)
+#         events.append(event)
     
-    return events
+#     return events
 
 
 # a Blueprint is a collection of routes under a certain prefix or "folder" on the http server
 bp = Blueprint("events", __name__, url_prefix="/events")
 
 broker = MessageBroker()
-presence_manager = PresenceManager(broker)
+#presence_manager = PresenceManager(broker)
 
 # See https://maxhalford.github.io/blog/flask-sse-no-deps/
 @bp.route('/stream', methods=['GET'])
@@ -95,11 +95,13 @@ def server_sent_events_stream():
     queue = broker.subscribe(account_id)
 
     # first, we dump the entire presence state as individual events
-    messages = list(map(
-      lambda event_object: f"data: {json.dumps(event_object, default=str)}\n\n",
-      presence_manager.get_all_as_events(account_id)
-    ))
-    yield "".join(messages)
+    # messages = list(map(
+    #   lambda event_object: f"data: {json.dumps(event_object, default=str)}\n\n",
+    #   presence_manager.get_all_as_events(account_id)
+    # ))
+    # yield "".join(messages)
+
+    yield f'data: {"type": "connected!"}\n\n'
 
     while True:
       # Blocks until a new message arrives
