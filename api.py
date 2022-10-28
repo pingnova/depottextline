@@ -67,7 +67,7 @@ def set_conversation_status(remote_number):
     'type': "conversation_event",
     'remoteNumber': remote_number,
     'sentBy': session['name'],
-    'body': request_body["status"],
+    'status': request_body["status"],
     'comment': comment,
     'date': datetime.now(timezone.utc)
   })

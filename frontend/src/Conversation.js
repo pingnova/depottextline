@@ -38,6 +38,8 @@ function Conversation(props) {
       if(eventData.remoteNumber == props.remoteNumber) {
         setEvents([{
           body: eventData.body,
+          status: eventData.status,
+          comment: eventData.comment,
           sentBy: eventData.sentBy,
           date: new Date(eventData.date),
         }].concat(events))
