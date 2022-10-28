@@ -15,7 +15,7 @@ function Avatar(props) {
       if(name.length < 3) {
         return <span class="name" style={style}>{name}</span>
       } else {
-        const names = name.trim().split(" ").map(x => x.trim()).filter(x => x.length)
+        let names = name.trim().split(" ").map(x => x.trim()).filter(x => x.length)
         if(names.length > 2) {
           names = names.slice(0, 2);
         }
