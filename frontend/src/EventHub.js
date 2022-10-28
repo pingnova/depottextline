@@ -2,8 +2,8 @@
 
 
 const EventHub = {
-  originalReconnectTimeoutMs: 100,
-  reconnectTimeoutMs: 100,
+  originalReconnectTimeoutMs: 500,
+  reconnectTimeoutMs: 500,
   startStreamingIfNotAlreadyStarted: () => {
     if(!EventHub.sse) {
       EventHub.sse = new EventSource('/events/stream');
@@ -35,7 +35,7 @@ const EventHub = {
           }
           EventHub.sse = null;
           EventHub.startStreamingIfNotAlreadyStarted();
-        });
+        }, EventHub.reconnectTimeoutMs );
       });
     }
   },
