@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'preact/hooks';
 
 import './Login.css';
 import { SessionContext } from './Session';
-import {keyEventHandlerFor} from './uiFunctions.js'
+import {inputHandlerFor} from './uiFunctions.js'
 
 function Login(props) {
 
@@ -70,12 +70,17 @@ function Login(props) {
     <div className="login-form">
       <h1>Login</h1>
 
+
+      <form onSubmit={login}>
+
       {/*  This is an if-else-statement  */}
       {/*  It looks wierd because of how react JSX (html) blocks are transpiled into "single-line" javascript statements */}
-      {/*  under the hood. if() {} else {} in javascript is multiple lines, it can't be injected inside a single statement. */}
+      {/*  under the hood. if() {} else {} in javascript is multiple lines, it can't be included inside a "single statement". */}
+      
       {/*  Well, that's not quite true, it can, if we use an inline immediately executed function (IIFE) like so: */}
       {/*  (() => {  if() {} else {}  })() */}
-      {/*  But that's quite a bit of syntax, it's cleaner in React JSX to simply use the Logical And operator && */}
+      {/*  But that's quite a bit of syntax, it's cleaner in React JSX to simply use the Logical And operator "&&" */}
+
       {/*  It works because the JavaScript interpreter won't evaluate any more than is neccesary to resolve the  */}
       {/*  True-or-False-ish-ness of the Logical And statement.  */}
       {/*  So if we have (promptForToken && etc...) and promptForToken is false, */}
@@ -83,8 +88,7 @@ function Login(props) {
       {/*  However if promptForToken is true, then it must evaluate etc... to figure out if the entire expression is "true" */}
       {/*  In fact, the entire statement (true && etc...) will return whatever etc... is, it won't return boolean true. */}
       {/*  JavaScript statements evaluating to "false-ish" inside the JSX will be simply dropped or omitted by React*/}
-      
-      <form onSubmit={login}>
+   
       {promptForToken && 
         <div>
           <p>
@@ -93,7 +97,7 @@ function Login(props) {
           <div className="form row">
             <div class="grow"></div>
             <label for="token">Login Token:</label>
-            <input type="text" id="token" value={token} onInput={keyEventHandlerFor(setToken)} ></input>
+            <input type="text" id="token" value={token} onInput={inputHandlerFor(setToken)} ></input>
             <div class="grow"></div>
           </div>
         </div>
@@ -104,7 +108,7 @@ function Login(props) {
           <div className="form row">
             <div class="grow"></div>
             <label for="identity">Email or Phone #:</label>
-            <input type="text" id="identity" value={identity} onInput={keyEventHandlerFor(setIdentity)} ></input>
+            <input type="text" id="identity" value={identity} onInput={inputHandlerFor(setIdentity)} ></input>
             <div class="grow"></div>
           </div>
         </div>

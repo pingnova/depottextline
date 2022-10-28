@@ -62,7 +62,7 @@ code {
 }
 .view-body {
   overflow-y: scroll;
-
+  overflow-x: clip;
   padding: 0.7rem;
 }
 
@@ -80,6 +80,9 @@ code {
   align-items: center;
   justify-content: space-around;
   width: 100%;
+}
+.subrow {
+  display: flex;
 }
 .column {
   display: flex;
@@ -146,24 +149,16 @@ code {
 
 
 .flash {
-  color: rgb(173, 74, 8);
-  font-weight: bold;
+  color: rgb(129, 20, 97);
+  font-family: source-code-pro, Menlo, Monaco, Consolas, monospace;
   text-align: center;
-  border: 1px dashed rgb(173, 74, 8);
-  border-radius: 0.5em;
-  margin-bottom: 2em;
-  padding: 1em;
+  border: 1px dashed rgb(129, 20, 97);
+  border-radius: 0.7rem;
+  margin-bottom: 2rem;
+  margin-top: 0.7rem;
+  padding: 1rem;
 }
 
-.flash.green {
-  color: rgb(8, 173, 137);
-  border-color: rgb(8, 173, 137);
-}
-
-.error {
-  color: rgb(173, 74, 8);
-  font-weight: bold;
-}
 
 
 

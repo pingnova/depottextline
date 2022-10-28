@@ -27,7 +27,7 @@ app.config.from_mapping(
   BASE_URL=os.environ.get("BASE_URL", default="http://localhost:5000"),
   NAME_OF_APP=os.environ.get("NAME_OF_APP", default="Depot Text Line"),
   SECRET_KEY=os.environ.get("SECRET_KEY", default="changeme!"),
-
+  OPEN_REGISTRATION=os.environ.get("OPEN_REGISTRATION", default="False").lower() in ['true', '1', 't', 'y', 'yes'],
 
   ACCOUNT_SID=os.environ.get("ACCOUNT_SID", default=""),
   AUTH_TOKEN=os.environ.get("AUTH_TOKEN", default=""),
@@ -58,7 +58,7 @@ else:
 
 
 
-# This configures how flask (and the WSGI container that its running in) processes log messages
+# This configures how flask (and the WSGI server that its running in) processes log messages
 # It controls which log messages are displayed and what format they are outputted in
 logging_dict_config({
   'version': 1,
@@ -78,7 +78,6 @@ logging_dict_config({
 
 db.init_app(app)
 
-# app.register_blueprint(send_sms.bp)
 app.register_blueprint(receive_sms.bp)
 app.register_blueprint(api_auth.bp)
 app.register_blueprint(api.bp)

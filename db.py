@@ -10,6 +10,9 @@ from flask import g
 from db_model import DBModel
 from shared import my_exec_info_message
 
+# increment this to enable new database changes written to sql files in the schema_migrations folder
+desiredSchemaVersion = 3
+
 def init_app(app):
 
   try:
@@ -46,7 +49,6 @@ def init_app(app):
   hasSchemaVersionTable = False
   actionWasTaken = False
   schemaVersion = 0
-  desiredSchemaVersion = 2
 
   cursor = connection.cursor()
 

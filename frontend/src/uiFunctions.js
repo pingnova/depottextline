@@ -3,7 +3,7 @@ import Duration from 'duration';
 import tinycolor from 'tinycolor2';
 
 
-const keyEventHandlerFor = (setter) => (e) => {
+const inputHandlerFor = (setter) => (e) => {
   const { value } = e.target;
   setter(value)
 };
@@ -69,7 +69,7 @@ function hashFnv32a(str, asString, seed) {
 
 
 export {
-  keyEventHandlerFor,
+  inputHandlerFor,
   getRandomColor,
   beautifyPhoneNumber,
   getTimeSince,

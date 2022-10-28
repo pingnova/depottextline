@@ -83,13 +83,13 @@ class DBModel:
 
   def list_conversations(self):
     self.cursor.execute("""
-      SELECT remote_numbers.name, remote_number, accounts.name, last_message_body, last_message_date
+      SELECT remote_numbers.name, remote_number, accounts.name, status, last_message_body, last_message_date
       FROM remote_numbers LEFT OUTER JOIN accounts on accounts.id = last_message_sent_by_account_id
       ORDER BY last_message_date DESC;
     """)
 
     return list(map(
-      lambda x: dict(name=x[0], remoteNumber=x[1], sentBy=x[2], body=x[3], date=x[4]),
+      lambda x: dict(name=x[0], remoteNumber=x[1], sentBy=x[2], status=x[3], body=x[4], date=x[5]),
       self.cursor.fetchall()
     ))
 
@@ -99,7 +99,7 @@ class DBModel:
 
   def list_messages(self, remote_number):
     self.cursor.execute("""
-        SELECT accounts.name, body, messages.created FROM messages
+        SELECT sid, accounts.name, body, messages.created FROM messages
         LEFT OUTER JOIN accounts on sent_by_account_id = accounts.id
         WHERE remote_number = %s ORDER BY created DESC;
       """,
@@ -107,7 +107,21 @@ class DBModel:
     )
 
     return list(map(
-      lambda x: dict(sentBy=x[0], body=x[1], date=x[2]),
+      lambda x: dict(id=x[0], sentBy=x[1], body=x[2], date=x[3]),
+      self.cursor.fetchall()
+    ))
+
+  def list_status_updates(self, remote_number):
+    self.cursor.execute("""
+        SELECT status_updates.id, accounts.name, status, comment, status_updates.created FROM status_updates
+        LEFT OUTER JOIN accounts on sent_by_account_id = accounts.id
+        WHERE remote_number = %s ORDER BY created DESC;
+      """,
+      (remote_number, )
+    )
+
+    return list(map(
+      lambda x: dict(id=x[0], sentBy=x[1], status=x[2], comment=x[3] if x[3] else "", date=x[4]),
       self.cursor.fetchall()
     ))
 
@@ -145,4 +159,42 @@ class DBModel:
       (sid, remote_number, sent_by_account_id, body)
     )
 
+    self.connection.commit()
+
+  def get_status(self, remote_number):
+    self.cursor.execute("""
+      SELECT status from remote_numbers WHERE remote_number = %s;
+    """, (remote_number, ))
+    status = "new"
+    row = self.cursor.fetchone()
+    if row:
+      status = row[0]
+
+    return status
+
+  def save_status(self, remote_number, sent_by_account_id, status, comment):
+
+    previous_status = self.get_status(remote_number)
+    description = f"status changed from \"{previous_status}\" to \"{status}\""
+    if comment:
+      description = f"{description} because \"{comment}\""
+
+    self.cursor.execute("""
+        UPDATE remote_numbers SET status = %s, last_message_sent_by_account_id = %s, last_message_body = %s, 
+          last_message_date = (NOW() AT TIME ZONE 'utc')
+        WHERE remote_number = %s
+      """,
+      (status, sent_by_account_id, description, remote_number)
+    )
+
+    self.cursor.execute("""
+        INSERT INTO status_updates (remote_number, sent_by_account_id, status, comment) VALUES (%s, %s, %s, %s)
+      """,
+      (remote_number, sent_by_account_id, status, comment)
+    )
+
+    self.connection.commit()
+
+  def set_conversation_name(self, remote_number, name):
+    self.cursor.execute("UPDATE remote_numbers SET name = %s WHERE remote_number = %s", (name, remote_number))
     self.connection.commit()

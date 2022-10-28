@@ -32,7 +32,7 @@ def receive_sms():
   get_model().save_message(sid, remote_number, sent_by_account_id, body)
 
   broker.publish({
-    'type': "message",
+    'type': "conversation_event",
     'remoteNumber': remote_number,
     'sentBy': None,
     'body': body,

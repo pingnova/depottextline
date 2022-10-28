@@ -18,22 +18,33 @@ function ConversationsList() {
   // here there are no dependencies, so it will fire the function once when the component mounts
   useEffect(() => {
     session.authenticatedFetch("/api/conversations").then(setConversations)
-  }, []);
 
-  EventHub.subscriptions.ConversationsList = {
-    'message': (eventData) => {
-      const matchingConversations = conversations.filter(x => x.remoteNumber == eventData.remoteNumber);
-      if(matchingConversations.length == 1) {
-        matchingConversations[0].sentBy = eventData.sentBy
-        matchingConversations[0].body = eventData.body
-        matchingConversations[0].date = eventData.date
-
-        setConversations(
-          matchingConversations.concat(conversations.filter(x => x.remoteNumber != eventData.remoteNumber))
-        )
+    EventHub.subscriptions.ConversationsList = {
+      'conversation_event': (eventData) => {
+        const matchingConversations = conversations.filter(x => x.remoteNumber == eventData.remoteNumber);
+        if(matchingConversations.length == 1) {
+          matchingConversations[0].sentBy = eventData.sentBy
+          if(eventData.body) {
+            matchingConversations[0].body = eventData.body
+          }
+          if(eventData.status) {
+            const description = `status changed from "${matchingConversations[0].status}" to "${eventData.status}"`;
+            matchingConversations[0].body = `${description}${eventData.comment ? `because "${eventData.comment}"` : ''}`
+            matchingConversations[0].status = eventData.status
+          }
+          matchingConversations[0].date = eventData.date
+  
+          setConversations(
+            matchingConversations.concat(conversations.filter(x => x.remoteNumber != eventData.remoteNumber))
+          )
+        }
       }
     }
-  }
+    
+    // https://robertmarshall.dev/blog/componentwillunmount-functional-components-react/#componentwillunmount-in-useeffect
+    // functions returned from the effect function will be called when the component unmounts, as cleanup 
+    return () => delete EventHub.subscriptions.ConversationsList;
+  }, []);
 
   if(!session?.account?.id) {
     return "..."
@@ -60,8 +71,14 @@ function ConversationsList() {
           <Avatar className="left" name={x.name} identityForColor={x.remoteNumber}/>
           <div class="grow">
             <div class="row space-between align-start">
-              <span>{beautifyPhoneNumber(x.remoteNumber)}</span>
-              <span class="small-text">{getTimeSince(x.date)}</span>
+              <div class="subrow wrap">
+                <span>{x.name ? x.name : beautifyPhoneNumber(x.remoteNumber)}</span>
+                <span class="small-text"> &nbsp; {x.name ? beautifyPhoneNumber(x.remoteNumber) : ''}</span>
+              </div>
+              <div class="subrow">
+                <b class="small-status">{x.status}</b>
+                <div class="small-text small-ago">{getTimeSince(x.date)}</div>
+              </div>
             </div>
             <div class="row space-between align-start">
               <span>

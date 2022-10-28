@@ -5,14 +5,19 @@ import './Conversation.css';
 import { SessionContext } from './Session';
 import EventHub from './EventHub';
 import Avatar from './Avatar';
-import {  beautifyPhoneNumber, getTimeSince, keyEventHandlerFor } from './uiFunctions.js';
+import { ModalContext } from './Modal.js'
+import TextInputModal from './TextInputModal.js'
+import ConversationStatusModal from './ConversationStatusModal.js'
+import {  beautifyPhoneNumber, getTimeSince, inputHandlerFor } from './uiFunctions.js';
 
 function Conversation(props) {
 
   const [reply, setReply] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [events, setEvents] = useState([]);
   const [name, setName] = useState("");
+  const [status, setStatus] = useState("");
   const session = useContext(SessionContext);
+  const modal = useContext(ModalContext);
 
   const scrollElement = useRef(null);
   const textInputElement = useRef(null);
@@ -22,23 +27,30 @@ function Conversation(props) {
   // here there are no dependencies, so it will fire the function once when the component mounts
   useEffect(() => {
     session.authenticatedFetch(`/api/conversations/${props.remoteNumber}`).then(responseObject => {
-      setMessages(responseObject.messages.map(x => ({...x, date: new Date(x.date)})));
+      setEvents(responseObject.events.map(x => ({...x, date: new Date(x.date)})));
       setName(responseObject.name);
+      setStatus(responseObject.status);
       textInputElement.current?.focus();
     })
   }, [props.remoteNumber]);
 
-  EventHub.subscriptions.ConversationsList = {
-    'message': (eventData) => {
-      if(eventData.remoteNumber == props.remoteNumber) {
-        setMessages([{
-          body: eventData.body,
-          sentBy: eventData.sentBy,
-          date: new Date(eventData.date),
-        }].concat(messages))
+  useEffect(() => {
+    EventHub.subscriptions.Conversation = {
+      'conversation_event': (eventData) => {
+        if(eventData.remoteNumber == props.remoteNumber) {
+          setEvents([{
+            body: eventData.body,
+            sentBy: eventData.sentBy,
+            date: new Date(eventData.date),
+          }].concat(events))
+        }
       }
     }
-  };
+
+    // https://robertmarshall.dev/blog/componentwillunmount-functional-components-react/#componentwillunmount-in-useeffect
+    // functions returned from the effect function will be called when the component unmounts, as cleanup 
+    return () => delete EventHub.subscriptions.Conversation;
+  }, [])
 
   const sendMessage = (e) => {
     if(e && e.preventDefault) {
@@ -54,58 +66,69 @@ function Conversation(props) {
           headers:  {"Content-type": "application/json"}
         }
       ).then(() => {
-        setMessages([{
+        setEvents([{
           body: reply,
           sentBy: session.account?.name || "Anonymous",
           date: new Date(),
-        }].concat(messages))
+        }].concat(events))
         setReply("");
       })
     }
   };
 
-  const formatTime = (date) => {
-    const millisecondsPerHour = 3600000
-    if( (new Date().getTime() - date.getTime()) <  millisecondsPerHour) {
-      return getTimeSince(date)
-    }
-    return date.toLocaleTimeString().toLowerCase().replace(/(\d+:\d+):\d+/, "$1");
+  const contactProfileModal = () => {
+    TextInputModal(modal, {
+      title: `Contact Profile for ${props.remoteNumber}`,
+      inputLabel: "Name",
+      initialValue: name || ""
+    })
+    .then((newName) => {
+      if(newName) {
+        session.authenticatedFetch(`/api/conversations/${props.remoteNumber}/name`, {
+          method: "POST",
+          body: JSON.stringify({name: newName}),
+          headers:  {"Content-type": "application/json"}
+        }).then(() => {
+          setName(newName);
+        });
+      }
+    });
   };
 
-  const differentDays = (date1, date2) => {
-    return date1.getDate() != date2.getDate() 
-        || date1.getMonth() != date2.getMonth() 
-        || date1.getFullYear() != date2.getFullYear();
+  const statusModal = () => {
+    ConversationStatusModal(modal, name || props.remoteNumber, status)
+    .then((statusUpdate) => {
+      if(statusUpdate) {
+        session.authenticatedFetch(`/api/conversations/${props.remoteNumber}/status`, {
+          method: "POST",
+          body: JSON.stringify(statusUpdate),
+          headers:  {"Content-type": "application/json"}
+        }).then(() => {
+          setStatus(statusUpdate.status);
+          setEvents([{
+            ...statusUpdate,
+            sentBy: session.account?.name || "Anonymous",
+            date: new Date(),
+          }].concat(events))
+        });
+      }
+    });
   };
 
-  const describeDay = (date) => {
-    const millisecondsPerDay = 86400000;
-    const dateString = date.toDateString()
-    const todayDateString = new Date().toDateString();
-    if(dateString == todayDateString) {
-      return "Today";
-    }
-    if(new Date(date.getTime()+millisecondsPerDay).toDateString() == todayDateString) {
-      return "Yesterday";
-    }
-    if(new Date(date.getTime()+millisecondsPerDay*2).toDateString() == todayDateString) {
-      return "Day Before Yesterday";
-    }
-    return dateString
-  };
+  
+  // don't display the component until the user is logged in
+  if(!session?.account?.id) {
+    return "..."
+  }
 
-  // whenever new messages are loaded, scroll to the bottom of the page!
+  // whenever new events are loaded, scroll to the bottom of the page!
   useEffect(() => {
     setTimeout(() => {
       if (scrollElement.current) {
         scrollElement.current.scrollTop = scrollElement.current.scrollHeight;
       }
     }, 10)
-  }, [messages]);
-
-  if(!session?.account?.id) {
-    return "..."
-  }
+  }, [events]);
 
   return (
     <div class="column width100">
@@ -113,32 +136,62 @@ function Conversation(props) {
         <div class="avatar-container clickable" onClick={() => route("/")}>
           <span class="large-text">←</span>
         </div>
-        <Avatar className="left right" name={name} identityForColor={props.remoteNumber}/>
+        <Avatar className="left right clickable" 
+                name={name} identityForColor={props.remoteNumber} onClick={contactProfileModal}/>
         <div class="grow">
-          <span>{beautifyPhoneNumber(props.remoteNumber)}</span>
+          <div className="clickable" onClick={contactProfileModal}>
+            {name && <div>{name}</div>}
+            <div class={name ? "small-text" : ""}>{beautifyPhoneNumber(props.remoteNumber)}</div>
+          </div>
+        </div>
+        <div>
+          <button onClick={statusModal}>
+            Status: {status}
+          </button>
+        </div>
+        <div>
+          &nbsp;
         </div>
       </div>
       <div class="grow column justify-start width100 view-body" ref={scrollElement}>
         <div class="chat">
-          {messages.map((x, i) => (<div key={x.date}>
-            {/* if */ (i < messages.length-1 && differentDays(messages[i+1].date, x.date)) && /* then */
+          {events.map((x, i) => (<div key={x.date}>
+            {/* if */ (i < events.length-1 && differentDays(events[i+1].date, x.date)) && /* then */
               <div class="row justify-center small-text">
                 {describeDay(x.date)}
               </div>
             }
-            <div class={`row ${x.sentBy ?'justify-end' :  'justify-start'}`}>
-              <div class={`chat-bubble ${x.sentBy ?  '' : 'incoming'}`}>
-                {x.body}<br/>
-                <div class="small-text float-right">{x.sentBy}{x.sentBy && <> &nbsp;</>}{formatTime(x.date)}</div>
+            {
+              // there are two types of events, SMS messages which have a body property, 
+              // and status updates which have a status property
+            }
+            {/* if */ x.body && /* then */
+              <div class={`row ${x.sentBy ?'justify-end' :  'justify-start'}`}>
+                <div class={`chat-bubble ${x.sentBy ?  '' : 'incoming'}`}>
+                  {x.body}<br/>
+                  <div class="small-text float-right">
+                    {x.sentBy}{x.sentBy && <> &nbsp;</>}{formatTime(x.date)}
+                  </div>
+                </div>
               </div>
-            </div>
+            }
+            {/* if */ x.status && /* then */
+              <div class="status-update">
+                <div class="grow"></div>
+                <div>{x.sentBy} set the status to "{x.status}" {x.comment ? `because "${x.comment}"` : ''}</div>
+                <div class="grow"></div>
+                <div class="small-text float-right">
+                  {formatTime(x.date)}
+                </div>
+              </div>
+            }
           </div>))}
         </div>
       </div>
       <div class="row reply-form">
         <form onSubmit={sendMessage} class="grow">
           <input class="message-input" type="text" placeholder={"SMS Message"}
-                 ref={textInputElement} value={reply} onInput={keyEventHandlerFor(setReply)}>
+                 ref={textInputElement} value={reply} onInput={inputHandlerFor(setReply)}>
           </input>
         </form>
 
@@ -147,6 +200,37 @@ function Conversation(props) {
       </div>
     </div>
   );
+}
+
+
+function formatTime(date) {
+  const millisecondsPerHour = 3600000
+  if( (new Date().getTime() - date.getTime()) <  millisecondsPerHour) {
+    return getTimeSince(date)
+  }
+  return date.toLocaleTimeString().toLowerCase().replace(/(\d+:\d+):\d+/, "$1");
+}
+
+function differentDays(date1, date2) {
+  return date1.getDate() != date2.getDate() 
+      || date1.getMonth() != date2.getMonth() 
+      || date1.getFullYear() != date2.getFullYear();
+}
+
+function describeDay(date) {
+  const millisecondsPerDay = 86400000;
+  const dateString = date.toDateString()
+  const todayDateString = new Date().toDateString();
+  if(dateString == todayDateString) {
+    return "Today";
+  }
+  if(new Date(date.getTime()+millisecondsPerDay).toDateString() == todayDateString) {
+    return "Yesterday";
+  }
+  if(new Date(date.getTime()+millisecondsPerDay*2).toDateString() == todayDateString) {
+    return "Day Before Yesterday";
+  }
+  return dateString
 }
 
 export default Conversation;

@@ -3,8 +3,8 @@ import { createContext } from 'preact';
 import { route } from 'preact-router';
 import { useState, useContext } from 'preact/hooks';
 
-import { ModalContext } from './Modal.js'
 import EventHub from './EventHub.js'
+import { ModalContext } from './Modal.js'
 import TextInputModal from './TextInputModal.js'
 
 const SessionContext = createContext();
@@ -38,8 +38,13 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
       route("/login");
     }, 
     promptForUsername: () => {
-      
-      TextInputModal(modal, "Please Set your Username", "Username", session.account?.name || "").then((newName) => {
+      TextInputModal(modal, {
+        title: "Your Profile",
+        description: "Please Set your Username",
+        inputLabel: "Username",
+        initialValue: session.account?.name || ""
+      })
+      .then((newName) => {
         if(newName) {
           session.authenticatedFetch("/api/setName", {
             method: "POST",
@@ -68,7 +73,7 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
               EventHub.startStreamingIfNotAlreadyStarted();
 
               // make sure the user sets thier username if not already done
-              if( !(session.account?.name || "") ) {
+              if(session.account?.id && !(session.account?.name || "") ) {
                 session.promptForUsername();
               }
             }

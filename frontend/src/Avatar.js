@@ -27,7 +27,7 @@ function Avatar(props) {
   }
 
   return (
-    <div class={`avatar-container ${props.className}`} >
+    <div class={`avatar-container ${props.className}`} onClick={props.onClick || (()=>{})} >
       <div class="avatar" style={{backgroundColor: color}}>
         {avatarContent(props.name, {color: textColor})}
       </div>
