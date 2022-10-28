@@ -101,7 +101,7 @@ def server_sent_events_stream():
     # ))
     # yield "".join(messages)
 
-    yield f'data: {"type": "connected!"}\n\n'
+    yield 'data: {"type": "connected!"}\n\n'
 
     while True:
       # Blocks until a new message arrives
