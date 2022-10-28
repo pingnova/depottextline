@@ -83,6 +83,7 @@ code {
 }
 .subrow {
   display: flex;
+  align-items: center;
 }
 .column {
   display: flex;

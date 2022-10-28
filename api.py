@@ -113,6 +113,9 @@ def send_sms(remote_number):
   return jsonify({'ok': True}), 200
 
 
+
+
+
 # "joinerater" (joining iterator) pattern, zip two sorted lists of dict objects together into a single sorted list
 def joinerate(list_a, list_b, sorted_by_key):
   to_return = []

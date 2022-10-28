@@ -1,5 +1,14 @@
 
-
+.share-button {
+  border-radius: 100%;
+  background-color: #2575a5b5;
+  padding: 0.3rem;
+  padding-right: 0.5rem;
+  margin-left: 1rem;
+}
+.share-button img {
+  width: 1.5rem;
+}
 
 
 .conversation {
@@ -69,10 +78,11 @@
 .message-input {
   width: 100%;
   border: 0;
-  border-radius: 2rem;
+  border-radius: 1.2rem;
   background-color: #ddd;
-  padding: 0.5rem;
+  padding: 0.5em;
   padding-left: 1rem;
+  resize: none;
 }
 
 .message-input:focus{

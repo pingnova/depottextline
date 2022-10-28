@@ -12,24 +12,31 @@ class DBModel:
     self.connection = connection
     self.cursor = cursor
 
-  def get_login_token(self, lower_case_email, canonicalized_phone_number):
-    self.cursor.execute("""
-      SELECT id FROM accounts WHERE lower_case_email = %s or canonicalized_phone_number = %s
-      """,
-      (lower_case_email, canonicalized_phone_number)
-    )
+  def get_account_id(self, lower_case_email, canonicalized_phone_number):
+    if lower_case_email:
+      self.cursor.execute("SELECT id FROM accounts WHERE lower_case_email = %s", (lower_case_email, ))
+    elif canonicalized_phone_number:
+      self.cursor.execute("SELECT id FROM accounts WHERE canonicalized_phone_number = %s", ( canonicalized_phone_number, ))
+    else:
+      raise "db_model.get_account_id(): invalid arguments"
     row = self.cursor.fetchone()
-    account_id = None
+    if row:
+      return row[0]
+    else:
+      return None
 
-    if not row:
+
+  def get_login_token(self, lower_case_email, canonicalized_phone_number):
+ 
+    account_id = self.get_account_id(lower_case_email, canonicalized_phone_number)
+    current_app.logger.info(lower_case_email+ "account_id" + str(account_id) if account_id else "none")
+    if account_id == None:
       self.cursor.execute("""
         INSERT INTO accounts (name, lower_case_email, canonicalized_phone_number) VALUES (%s, %s, %s) RETURNING id
         """,
         ("", lower_case_email, canonicalized_phone_number)
       )
       account_id = self.cursor.fetchone()[0]
-    else:
-      account_id = row[0]
 
     self.cursor.execute("""
         SELECT token FROM login_tokens WHERE account_id = %s 

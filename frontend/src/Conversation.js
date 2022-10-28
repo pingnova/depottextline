@@ -26,7 +26,7 @@ function Conversation(props) {
   // useEffect will fire the effect function every time one of the dependencies changes
   // here there are no dependencies, so it will fire the function once when the component mounts
   useEffect(() => {
-    session.authenticatedFetch(`/api/conversations/${props.remoteNumber}`).then(responseObject => {
+    session.authenticatedFetch(`/api/conversations/${props.remoteNumber}`, true).then(responseObject => {
       setEvents(responseObject.events.map(x => ({...x, date: new Date(x.date)})));
       setName(responseObject.name);
       setStatus(responseObject.status);
@@ -88,7 +88,7 @@ function Conversation(props) {
           method: "POST",
           body: JSON.stringify({name: newName}),
           headers:  {"Content-type": "application/json"}
-        }).then(() => {
+        }, true).then(() => {
           setName(newName);
         });
       }
@@ -103,7 +103,7 @@ function Conversation(props) {
           method: "POST",
           body: JSON.stringify(statusUpdate),
           headers:  {"Content-type": "application/json"}
-        }).then(() => {
+        }, true).then(() => {
           setStatus(statusUpdate.status);
           setEvents([{
             ...statusUpdate,
@@ -190,9 +190,18 @@ function Conversation(props) {
       </div>
       <div class="row reply-form">
         <form onSubmit={sendMessage} class="grow">
-          <input class="message-input" type="text" placeholder={"SMS Message"}
+          <textarea class="message-input" type="text" placeholder={"SMS Message"} 
+                 style={{height: `${reply.split("\n").length*1.5+1}em`, lineHeight: '1.5em'}}
+                 onKeyDown={(e) => {
+                   // Normally a textarea will consume the enter key event to make a newline.
+                   // instead we submit the form, but only if the shift key is not pressed :) 
+                   if(!e.shiftKey && e.key == "Enter") {
+                     e.preventDefault();
+                     sendMessage();
+                   }
+                 }}
                  ref={textInputElement} value={reply} onInput={inputHandlerFor(setReply)}>
-          </input>
+          </textarea>
         </form>
 
         <div class="large-text send-button clickable" onClick={sendMessage}>→</div>

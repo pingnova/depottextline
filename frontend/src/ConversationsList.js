@@ -3,21 +3,25 @@ import { route } from 'preact-router';
 
 // its all in conversation.css
 // import './ConversationsList.css';
+import shareImage from './share.png'
 import EventHub from './EventHub';
 import { SessionContext } from './Session';
 import Avatar from './Avatar';
+import { ModalContext } from './Modal.js'
+import TextInputModal from './TextInputModal.js'
 import {  beautifyPhoneNumber, getTimeSince } from './uiFunctions.js';
 
 function ConversationsList() {
 
   const [conversations, setConversations] = useState([]);
   const session = useContext(SessionContext);
+  const modal = useContext(ModalContext);
 
   // useEffect takes 2 arguments: the effect function and the dependencies
   // useEffect will fire the effect function every time one of the dependencies changes
   // here there are no dependencies, so it will fire the function once when the component mounts
   useEffect(() => {
-    session.authenticatedFetch("/api/conversations").then(setConversations)
+    session.authenticatedFetch("/api/conversations", null, true).then(setConversations)
 
     EventHub.subscriptions.ConversationsList = {
       'conversation_event': (eventData) => {
@@ -46,6 +50,25 @@ function ConversationsList() {
     return () => delete EventHub.subscriptions.ConversationsList;
   }, []);
 
+  const share = () => {
+    TextInputModal(modal, {
+      title: "Invite Another User",
+      inputLabel: "Phone # / Email Address",
+      initialValue: ""
+    })
+    .then((identity) => {
+      if(identity) {
+        session.authenticatedFetch("/auth/get_login_token", {
+          method: "POST",
+          body: JSON.stringify({identity}),
+          headers:  {"Content-type": "application/json"}
+        }, true).then(() => {
+          alert(`${identity} has been invited!`)
+        });
+      }
+    })
+  };
+
   if(!session?.account?.id) {
     return "..."
   }
@@ -55,7 +78,12 @@ function ConversationsList() {
       <div class="row space-between view-header">
 
         <div class="row space-between grow">
-          <span>Depot Text Line</span>
+          <div class="subrow">
+            <b><i>Depot Text Line</i></b>
+            <div class="share-button clickable" onClick={share}>
+              <img src={shareImage}></img>
+            </div>
+          </div>
           <span class="double-spaced clickable" onClick={session.promptForUsername}>
             {session.account?.name || "Anonymous"}
           </span>

@@ -8,9 +8,6 @@ const TextInputModal = (modal, {title, inputLabel, description, initialValue}) =
     const [text, setText] = useState(initialValue);
     const inputElement = useRef(null);
 
-
-      console.log(`initialValue: ${initialValue},  text: ${text}`);
-
     const buttons = [
       {
         enterKey: true,

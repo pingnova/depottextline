@@ -50,7 +50,7 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
             method: "POST",
             body: JSON.stringify({name: newName}),
             headers:  {"Content-type": "application/json"}
-          }).then(() => {
+          }, true).then(() => {
             session.account.name = newName;
             session.logIn(session.account);
           });
@@ -63,7 +63,7 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
       if(displayLoader) {
         session.pushLoading()
       }
-      const toReturn = fetch(url, options)
+      let toReturn = fetch(url, options)
         .then(response => {
           return response.json().then(responseObject => {
             if(response.status == 401) {

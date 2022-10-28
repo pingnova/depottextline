@@ -30,27 +30,36 @@ def account_required(view):
 def get_login_token():
     request_body = request.json
 
-    session.clear()
-
     # if the user provided us an identity, then they are asking us to send them a login token
     if 'identity' in request_body:
       identity = request_body['identity']
 
-      # Check if the user entered what appears to be a phone number
-      if re.match(r"^[0-9+_.() -]+$", identity):
-        return send_login_token_to_phone(identity)
+      result = resolve_phone_number_or_email(identity)
 
-      # else if its not a phone number, check if it could be an email address
-      elif len(identity.strip()) >= 6 and identity.count('@') == 1 and identity.count('.') > 0:
-        return send_login_token_to_email(identity)
+      if 'error' in result:
+        return jsonify(result), 400
+
+      canonicalized_phone_number = result['canonicalized_phone_number'] if 'canonicalized_phone_number' in result else None
+      lower_case_email = result['lower_case_email'] if 'lower_case_email' in result else None
+
+      if "account_id" not in session and  not current_app.config['OPEN_REGISTRATION']:
+        # if the user is not logged in and open registration is not turned on, we can only pass out
+        # login tokens for accounts that already exist
+        if get_model().get_account_id(lower_case_email, canonicalized_phone_number) == None:
+          return jsonify({'error': "open registration is not turned on, you'll have to "
+                                   "be invited by someone who already has a login"}), 401
       
-      # if it's not a phone # or email address, then tell the user about the problem
+      if canonicalized_phone_number:
+        return send_login_token_to_phone(canonicalized_phone_number)
+      elif lower_case_email:
+        return send_login_token_to_email(lower_case_email)
       else:
-        return jsonify({'error': f"'{identity}' was not recognized as an email address or phone number"}), 400
-    
+        return jsonify({'error': 'Internal Server Error :D'}), 500
+
     # if no identity given, return an error (this indicates a bug in the frontend)
     else:
         return jsonify({'error': f"the 'identity' field is required"}), 400
+
 
 @bp.route("/login", methods=['POST'])
 def login():
@@ -78,28 +87,46 @@ def login():
         return jsonify({'error': f"the 'token' field is required"}), 400
 
 
+
+
 ##     -----------  Helper functions for Login  --------------   
 
-def send_login_token_to_phone(raw_phone_number):
-  # Since we are going to store this in the database and use it as an identifier,
-  # We really really don't want it to be possible for two different strings to represent 
-  # the same phone number.
-  # canonicalization is the process of ensuring that there's only one way of representing each
-  # different piece of data. We use the same canonical phone # format that twilio does
-  # TODO support international country codes? Right now it forces US numbers only 
+def resolve_phone_number_or_email(identity):
 
-  just_the_digits = re.sub(r"[^0-9]", "", raw_phone_number)
-  canonicalized_phone_number = None
-  if len(just_the_digits) == 3+3+4:
-    canonicalized_phone_number = f"+1{just_the_digits}"
-  elif len(just_the_digits) == 1+3+3+4:
-    canonicalized_phone_number = f"+{just_the_digits}"
-  
-  if not canonicalized_phone_number:
-    return jsonify({
-      'error': f"'{just_the_digits}' was not recognized as a phone number. "
-             + f"Expected 10 digits, got {len(just_the_digits)}."
-    }), 400
+  # Check if the user entered what appears to be a phone number
+  if re.match(r"^[0-9+_.() -]+$", identity):
+    # Since we are going to store this in the database and use it as an identifier,
+    # We really really don't want it to be possible for two different strings to represent 
+    # the same phone number.
+    # canonicalization is the process of ensuring that there's only one way of representing each
+    # different piece of data. We use the same canonical phone # format that twilio does
+    # TODO support international country codes? Right now it forces US numbers only 
+
+    just_the_digits = re.sub(r"[^0-9]", "", identity)
+    canonicalized_phone_number = None
+    if len(just_the_digits) == 3+3+4:
+      canonicalized_phone_number = f"+1{just_the_digits}"
+    elif len(just_the_digits) == 1+3+3+4:
+      canonicalized_phone_number = f"+{just_the_digits}"
+
+    if not canonicalized_phone_number:
+      return {
+        'error': f"'{just_the_digits}' was not recognized as a phone number. "
+               + f"Expected 10 digits, got {len(just_the_digits)}."
+      }
+    else:
+      return { 'canonicalized_phone_number': canonicalized_phone_number }
+
+
+  # else if its not a phone number, check if it could be an email address
+  elif len(identity.strip()) >= 6 and identity.count('@') == 1 and identity.count('.') > 0:
+    return { 'lower_case_email': identity.strip().lower() }
+  else:
+    # if it's not a phone # or email address, then tell the user about the problem
+    return { 'error': f"'{identity}' was not recognized as an email address or phone number" }
+
+
+def send_login_token_to_phone(canonicalized_phone_number):
 
   token = get_model().get_login_token("", canonicalized_phone_number)
 
@@ -120,7 +147,7 @@ def send_login_token_to_phone(raw_phone_number):
   return jsonify({'message': f"Sent login token to {canonicalized_phone_number}.  Tap the link in that message or enter the token here to complete login."}), 200
 
 
-def send_login_token_to_email(raw_email_address):
+def send_login_token_to_email(email):
 
   # if the app hasn't been configured to send email, then explain to the user whats going on
   if current_app.config['MAIL_SERVER'] == "":
@@ -131,7 +158,6 @@ def send_login_token_to_email(raw_email_address):
       )
     }), 500
   
-  email = raw_email_address.strip().lower()
   token = get_model().get_login_token(email, "")
 
   if not token:
