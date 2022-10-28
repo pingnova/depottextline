@@ -11,6 +11,7 @@ psycopg2-binary = "*"
 flask-mail = "*"
 nanoid = "*"
 gunicorn = "*"
+gevent = "*"
 
 [dev-packages]
 
