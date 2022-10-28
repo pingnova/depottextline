@@ -76,7 +76,7 @@ function Conversation(props) {
   };
 
   const contactProfileModal = () => {
-    const newName = window.prompt(`Enter a Name for ${props.remoteNumber}`,  name || "").trim()
+    const newName = (window.prompt(`Enter a Name for ${props.remoteNumber}`,  name || "") || "").trim()
     if(newName) {
       session.authenticatedFetch(`/api/conversations/${props.remoteNumber}/name`, {
         method: "POST",

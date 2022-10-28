@@ -49,7 +49,7 @@ function ConversationsList() {
   }, []);
 
   const share = () => {
-    const identity = prompt("Invite Another User: Enter Phone # / Email Address", "").trim()
+    const identity = (window.prompt("Invite Another User: Enter Phone # / Email Address", "") || "").trim()
     if(identity) {
       session.authenticatedFetch("/auth/get_login_token", {
         method: "POST",

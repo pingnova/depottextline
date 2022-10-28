@@ -35,7 +35,7 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
       route("/login");
     }, 
     promptForUsername: () => {
-      const newName = prompt("Your Profile: Please Set your Username", session.account?.name || "").trim()
+      const newName = (window.prompt("Your Profile: Please Set your Username", session.account?.name || "") || "").trim()
       if(newName) {
         session.authenticatedFetch("/api/setName", {
           method: "POST",
