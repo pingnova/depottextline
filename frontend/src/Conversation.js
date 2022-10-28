@@ -34,19 +34,19 @@ function Conversation(props) {
     })
   }, [props.remoteNumber]);
 
-  useEffect(() => {
-    EventHub.subscriptions.Conversation = {
-      'conversation_event': (eventData) => {
-        if(eventData.remoteNumber == props.remoteNumber) {
-          setEvents([{
-            body: eventData.body,
-            sentBy: eventData.sentBy,
-            date: new Date(eventData.date),
-          }].concat(events))
-        }
+  EventHub.subscriptions.Conversation = {
+    'conversation_event': (eventData) => {
+      if(eventData.remoteNumber == props.remoteNumber) {
+        setEvents([{
+          body: eventData.body,
+          sentBy: eventData.sentBy,
+          date: new Date(eventData.date),
+        }].concat(events))
       }
     }
+  }
 
+  useEffect(() => {
     // https://robertmarshall.dev/blog/componentwillunmount-functional-components-react/#componentwillunmount-in-useeffect
     // functions returned from the effect function will be called when the component unmounts, as cleanup 
     return () => delete EventHub.subscriptions.Conversation;

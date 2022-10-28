@@ -17,34 +17,35 @@ function ConversationsList() {
   const session = useContext(SessionContext);
   const modal = useContext(ModalContext);
 
+
+  EventHub.subscriptions.ConversationsList = {
+    'conversation_event': (eventData) => {
+      const matchingConversations = conversations.filter(x => x.remoteNumber == eventData.remoteNumber);
+      if(matchingConversations.length == 1) {
+        matchingConversations[0].sentBy = eventData.sentBy
+        if(eventData.body) {
+          matchingConversations[0].body = eventData.body
+        }
+        if(eventData.status) {
+          const description = `status changed from "${matchingConversations[0].status}" to "${eventData.status}"`;
+          matchingConversations[0].body = `${description}${eventData.comment ? `because "${eventData.comment}"` : ''}`
+          matchingConversations[0].status = eventData.status
+        }
+        matchingConversations[0].date = eventData.date
+
+        setConversations(
+          matchingConversations.concat(conversations.filter(x => x.remoteNumber != eventData.remoteNumber))
+        )
+      }
+    }
+  };
+
   // useEffect takes 2 arguments: the effect function and the dependencies
   // useEffect will fire the effect function every time one of the dependencies changes
   // here there are no dependencies, so it will fire the function once when the component mounts
   useEffect(() => {
     session.authenticatedFetch("/api/conversations", null, true).then(setConversations)
 
-    EventHub.subscriptions.ConversationsList = {
-      'conversation_event': (eventData) => {
-        const matchingConversations = conversations.filter(x => x.remoteNumber == eventData.remoteNumber);
-        if(matchingConversations.length == 1) {
-          matchingConversations[0].sentBy = eventData.sentBy
-          if(eventData.body) {
-            matchingConversations[0].body = eventData.body
-          }
-          if(eventData.status) {
-            const description = `status changed from "${matchingConversations[0].status}" to "${eventData.status}"`;
-            matchingConversations[0].body = `${description}${eventData.comment ? `because "${eventData.comment}"` : ''}`
-            matchingConversations[0].status = eventData.status
-          }
-          matchingConversations[0].date = eventData.date
-  
-          setConversations(
-            matchingConversations.concat(conversations.filter(x => x.remoteNumber != eventData.remoteNumber))
-          )
-        }
-      }
-    }
-    
     // https://robertmarshall.dev/blog/componentwillunmount-functional-components-react/#componentwillunmount-in-useeffect
     // functions returned from the effect function will be called when the component unmounts, as cleanup 
     return () => delete EventHub.subscriptions.ConversationsList;

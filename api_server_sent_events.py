@@ -126,6 +126,7 @@ def server_sent_events_stream():
       # it "sleeps" the current thread of execution temporarily.
       # Yield makes this stream() function a "generator"
       # which is python-ese for "thing which can be iterated asynchronously"
+      logger.info(f"yield msg {msg}")
       yield msg
 
   return Response(stream(current_app.logger, session['account_id']), mimetype='text/event-stream')
