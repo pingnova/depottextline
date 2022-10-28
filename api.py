@@ -8,7 +8,8 @@ from flask.json import jsonify
 
 from db import get_model
 from api_auth import account_required
-from api_server_sent_events import broker, presence_manager
+from api_server_sent_events import broker
+# from api_server_sent_events import broker, presence_manager
 
 
 # a Blueprint is a collection of routes under a certain prefix or "folder" on the http server
