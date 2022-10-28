@@ -40,9 +40,9 @@ class MessageBroker:
       if subscriber['account_id'] != event_object['account_id']:
         try:
           subscriber['queue'].put_nowait(event_object)
-          current_app.logger.info("put_nowait() ok to: " + subscriber['account_id'] + json.dumps(event_object))
+          current_app.logger.info(f"put_nowait() ok to: {str(subscriber['account_id'])}: {json.dumps(event_object)}")
         except queue.Full:
-          current_app.logger.info("QUEUE FULL!! to: " + subscriber['account_id'] + json.dumps(event_object))
+          current_app.logger.info(f"QUEUE FULL!! to: {str(subscriber['account_id'])}: {json.dumps(event_object)}")
           del self.subscriptions[i]
 
 # class PresenceManager:
