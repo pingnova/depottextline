@@ -40,7 +40,9 @@ class MessageBroker:
       if subscriber['account_id'] != event_object['account_id']:
         try:
           subscriber['queue'].put_nowait(event_object)
+          current_app.logger.info("put_nowait() ok to: " + subscriber['account_id'] + json.dumps(event_object))
         except queue.Full:
+          current_app.logger.info("QUEUE FULL!! to: " + subscriber['account_id'] + json.dumps(event_object))
           del self.subscriptions[i]
 
 # class PresenceManager:
@@ -89,11 +91,10 @@ broker = MessageBroker()
 @bp.route('/stream', methods=['GET'])
 @account_required
 def server_sent_events_stream():
-  def stream(logger, account_id):
-    # Note, for some reason this happens outside the application context?? 
-    # So any current_app or other flask stuff has to be passed in from outside
 
-    queue = broker.subscribe(account_id)
+  # Note, for some reason this happens outside the application context?? 
+  # So any current_app or other flask stuff has to be passed in from outside
+  def stream(logger, account_id):
 
     # first, we dump the entire presence state as individual events
     # messages = list(map(
@@ -102,14 +103,18 @@ def server_sent_events_stream():
     # ))
     # yield "".join(messages)
 
-    i = 0
-    while i < 5:
-      i += 1
-      time.sleep(1)
-      yield 'data: {"type": "connected!"}\n\n'
+    # i = 0
+    # while i < 5:
+    #   i += 1
+    #   time.sleep(1)
+    #   yield 'data: {"type": "connected!"}\n\n'
 
-    return
+    # return
 
+    time.sleep(0.1)
+    yield 'data: {"type": "connected!"}\n\n'
+
+    queue = broker.subscribe(account_id)
     while True:
       # Blocks until a new message arrives
       event_object = queue.get()
