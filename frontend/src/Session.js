@@ -14,6 +14,8 @@ if(originalAccountString != null && originalAccountString != "") {
   originalAccount = JSON.parse(originalAccountString)
 }
 
+let didPromptForUsername = false;
+
 function SessionContextComponent({loading, setLoading, setFlashMessage, children}) {
    
   
@@ -35,6 +37,11 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
       route("/login");
     }, 
     promptForUsername: () => {
+      if(didPromptForUsername) {
+        return
+      }
+      didPromptForUsername = true;
+
       const newName = (window.prompt("Your Profile: Please Set your Username", session.account?.name || "") || "").trim()
       if(newName) {
         session.authenticatedFetch("/api/setName", {
@@ -62,7 +69,6 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
               EventHub.startStreamingIfNotAlreadyStarted();
 
               // make sure the user sets thier username if not already done
-              console.log("authenticatedFetch success", session, session.account);
               if(session.account?.id && !(session.account?.name || "") ) {
                 session.promptForUsername();
               }

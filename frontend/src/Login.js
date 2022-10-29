@@ -47,8 +47,10 @@ function Login(props) {
             const loggedInAccount = responseObject
             
             // make sure the user sets thier username if not already done
-            console.log("/auth/login success", loggedInAccount);
             session.logIn(loggedInAccount);
+            if(loggedInAccount.id && !(loggedInAccount.name || "") ) {
+              session.promptForUsername();
+            }
           } else {
             session.logOut(responseObject.error || "Unknown Login Error")
           }
