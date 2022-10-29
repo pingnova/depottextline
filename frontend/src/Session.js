@@ -52,7 +52,7 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
       if(displayLoader) {
         session.pushLoading()
       }
-      let toReturn = (options ? fetch(url, options) : fetch(url))
+      let toReturn = fetch(url, options)
         .then(response => {
           return response.json().then(responseObject => {
             if(response.status == 401) {
@@ -62,6 +62,7 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
               EventHub.startStreamingIfNotAlreadyStarted();
 
               // make sure the user sets thier username if not already done
+              console.log("authenticatedFetch success", session, session.account);
               if(session.account?.id && !(session.account?.name || "") ) {
                 session.promptForUsername();
               }

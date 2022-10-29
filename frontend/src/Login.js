@@ -45,6 +45,9 @@ function Login(props) {
         .then(responseObject => {
           if(responseObject.id && (responseObject.email || responseObject.phoneNumber)) {
             const loggedInAccount = responseObject
+            
+            // make sure the user sets thier username if not already done
+            console.log("/auth/login success", loggedInAccount);
             session.logIn(loggedInAccount);
           } else {
             session.logOut(responseObject.error || "Unknown Login Error")
