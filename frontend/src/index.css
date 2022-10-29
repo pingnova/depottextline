@@ -155,8 +155,7 @@ code {
   text-align: center;
   border: 1px dashed rgb(129, 20, 97);
   border-radius: 0.7rem;
-  margin-bottom: 2rem;
-  margin-top: 0.7rem;
+  margin: 0.7rem;
   padding: 1rem;
 }
 

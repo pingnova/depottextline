@@ -97,22 +97,18 @@ function Login(props) {
           <p>
             {sentTokenMessage}
           </p>
-          <div className="form row">
-            <div class="grow"></div>
+          <div className="form row justify-start wrap">
             <label for="token">Login Token:</label>
             <input type="text" id="token" value={token} onInput={inputHandlerFor(setToken)} ></input>
-            <div class="grow"></div>
           </div>
         </div>
       }
       {!promptForToken && 
         <div>
           <p>If you do not already have an account, one will be created for you.</p>
-          <div className="form row">
-            <div class="grow"></div>
+          <div className="form row justify-start wrap">
             <label for="identity">Email or Phone #:</label>
             <input type="text" id="identity" value={identity} onInput={inputHandlerFor(setIdentity)} ></input>
-            <div class="grow"></div>
           </div>
         </div>
       }
