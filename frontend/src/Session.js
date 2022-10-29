@@ -42,17 +42,20 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
       }
       didPromptForUsername = true;
 
-      const newName = (window.prompt("Your Profile: Please Set your Username", session.account?.name || "") || "").trim()
-      if(newName) {
-        session.authenticatedFetch("/api/setName", {
-          method: "POST",
-          body: JSON.stringify({name: newName}),
-          headers:  {"Content-type": "application/json"}
-        }, true).then(() => {
-          session.account.name = newName;
-          session.logIn(session.account);
-        });
-      }
+      setTimeout(() => {
+        const newName = (window.prompt("Your Profile: Please Set your Username", session.account?.name || "") || "").trim()
+        if(newName) {
+          session.authenticatedFetch("/api/setName", {
+            method: "POST",
+            body: JSON.stringify({name: newName}),
+            headers:  {"Content-type": "application/json"}
+          }, true).then(() => {
+            session.account.name = newName;
+            session.logIn(session.account);
+          });
+        }
+      }, 500);
+
 
     },
     authenticatedFetch: (url, options, displayLoader) => {

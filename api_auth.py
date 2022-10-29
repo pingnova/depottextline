@@ -177,4 +177,4 @@ def send_login_token_to_email(email):
     )
   )
 
-  return jsonify({'message': f"Sent login token / link to {email}. Click the link in that email or enter the token here to complete login."}), 200
+  return jsonify({'message': f"Sent login token / link to {email}.\n\nClick the link in that email or enter the token here to complete login."}), 200
