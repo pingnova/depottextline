@@ -42,17 +42,25 @@ def get_login_token():
       canonicalized_phone_number = result['canonicalized_phone_number'] if 'canonicalized_phone_number' in result else None
       lower_case_email = result['lower_case_email'] if 'lower_case_email' in result else None
 
+      account_id_of_identity = get_model().get_account_id(lower_case_email, canonicalized_phone_number)
+
       if "account_id" not in session and  not current_app.config['OPEN_REGISTRATION']:
         # if the user is not logged in and open registration is not turned on, we can only pass out
         # login tokens for accounts that already exist
-        if get_model().get_account_id(lower_case_email, canonicalized_phone_number) == None:
+        if account_id_of_identity == None:
           return jsonify({'error': "open registration is not turned on, you'll have to "
                                    "be invited by someone who already has a login"}), 401
       
+      duration = "10 min"
+
+      # if its an invite token (identity being invited is not the same as the requester's session)
+      if "account_id" in session and account_id_of_identity != session["account_id"]:
+        duration = "1 month"
+
       if canonicalized_phone_number:
-        return send_login_token_to_phone(canonicalized_phone_number)
+        return send_login_token_to_phone(canonicalized_phone_number, duration)
       elif lower_case_email:
-        return send_login_token_to_email(lower_case_email)
+        return send_login_token_to_email(lower_case_email, duration)
       else:
         return jsonify({'error': 'Internal Server Error :D'}), 500
 
@@ -126,9 +134,9 @@ def resolve_phone_number_or_email(identity):
     return { 'error': f"'{identity}' was not recognized as an email address or phone number" }
 
 
-def send_login_token_to_phone(canonicalized_phone_number):
+def send_login_token_to_phone(canonicalized_phone_number, duration):
 
-  token = get_model().get_login_token("", canonicalized_phone_number)
+  token = get_model().get_login_token("", canonicalized_phone_number, duration)
 
   if not token:
     return jsonify({
@@ -147,7 +155,7 @@ def send_login_token_to_phone(canonicalized_phone_number):
   return jsonify({'message': f"Sent login token to {canonicalized_phone_number}.  Tap the link in that message or enter the token here to complete login."}), 200
 
 
-def send_login_token_to_email(email):
+def send_login_token_to_email(email, duration):
 
   # if the app hasn't been configured to send email, then explain to the user whats going on
   if current_app.config['MAIL_SERVER'] == "":
@@ -158,7 +166,7 @@ def send_login_token_to_email(email):
       )
     }), 500
   
-  token = get_model().get_login_token(email, "")
+  token = get_model().get_login_token(email, "", duration)
 
   if not token:
     return jsonify({

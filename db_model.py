@@ -26,7 +26,7 @@ class DBModel:
       return None
 
 
-  def get_login_token(self, lower_case_email, canonicalized_phone_number):
+  def get_login_token(self, lower_case_email, canonicalized_phone_number, duration):
  
     account_id = self.get_account_id(lower_case_email, canonicalized_phone_number)
     current_app.logger.info(lower_case_email+ "account_id" + str(account_id) if account_id else "none")
@@ -40,7 +40,7 @@ class DBModel:
 
     self.cursor.execute("""
         SELECT token FROM login_tokens WHERE account_id = %s 
-        and created > ((NOW() AT TIME ZONE 'utc') - INTERVAL '10 min')
+        and expires > (NOW() AT TIME ZONE 'utc')
       """, 
       (account_id, )
     )
@@ -48,7 +48,9 @@ class DBModel:
       return None
 
     token = generate(alphabet="1234567890", size=6)
-    self.cursor.execute("INSERT INTO login_tokens (account_id, token) VALUES (%s, %s)", (account_id, token))
+    self.cursor.execute("""
+      INSERT INTO login_tokens (account_id, token, expires) VALUES (%s, %s,  ((NOW() AT TIME ZONE 'utc') + INTERVAL %s))
+    """, (account_id, token, duration))
     self.connection.commit()
 
     return token
@@ -56,7 +58,7 @@ class DBModel:
   def login(self, token):
     self.cursor.execute("""
         SELECT account_id FROM login_tokens WHERE token = %s 
-        and created > ((NOW() AT TIME ZONE 'utc') - INTERVAL '10 min')
+        and expires > (NOW() AT TIME ZONE 'utc')
       """, 
       (token, )
     )
