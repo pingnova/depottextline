@@ -91,6 +91,11 @@ Otherwise:
 Then you should be able to load it up in your web browser at `http://127.0.0.1:5000`
 
 
+## Manually querying the DB
+
+```
+sudo -u postgres psql -d depottextline -c "select * from login_tokens"
+```
 
 ## Twilio Webhooks Setup
 

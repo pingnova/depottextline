@@ -8,10 +8,10 @@ from api_server_sent_events import broker
 
 
 # a Blueprint is a collection of routes under a certain prefix or "folder" on the http server
-bp = Blueprint("receive_sms", __name__, url_prefix="/receive_sms")
+bp = Blueprint("receive_sms", __name__, url_prefix="/")
 
 # You could access this route in the web browser at  http://localhost:5000/send_sms/+61212345678
-@bp.route("/", methods=['GET', 'POST'])
+@bp.route("/receive_sms", methods=['GET', 'POST'])
 def receive_sms():
 
   # Get the Twilio String Identifier (SID) associated with this message
