@@ -173,6 +173,7 @@ code {
 */
 
 .loader-container {
+  user-select: none;
   position: fixed;
   top:0;
   left:0;
@@ -185,6 +186,7 @@ code {
 .loader,
 .loader:before,
 .loader:after {
+  user-select: none;
   background: rgba(0,0,0,0.4);
   -webkit-animation: load1 1s infinite ease-in-out;
   animation: load1 1s infinite ease-in-out;
@@ -203,6 +205,7 @@ code {
   animation-delay: -0.32s;
 }
 .loader {
+  user-select: none;
   color: rgba(0,0,0,0.4);
   text-indent: -9999em;
   margin: 160px auto;
