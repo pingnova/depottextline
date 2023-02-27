@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from flask import Blueprint, request, redirect
+from flask import current_app, Blueprint, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 
 from db import get_model
