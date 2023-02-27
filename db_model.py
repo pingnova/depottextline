@@ -1,5 +1,7 @@
 from nanoid import generate
 
+from datetime import datetime, timezone
+
 # I was never able to get this type hinting to work correctly
 # from psycopg2.extensions import connection as Psycopg2Connection, cursor as Psycopg2Cursor
 from flask import current_app
