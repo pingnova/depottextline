@@ -143,6 +143,14 @@ class DBModel:
     return dict(name=row[0])
 
 
+  def get_remote_number_last_message_date(self, remote_number):
+    self.cursor.execute("SELECT last_message_date FROM remote_numbers WHERE remote_number = %s", (remote_number, ))
+    row = self.cursor.fetchone()
+    if not row:
+      return None
+
+    return row[0]
+
   def save_message(self, sid, remote_number, sent_by_account_id, body):
 
     self.cursor.execute("SELECT remote_number FROM remote_numbers WHERE remote_number = %s", (remote_number, ))
@@ -207,3 +215,14 @@ class DBModel:
   def set_conversation_name(self, remote_number, name):
     self.cursor.execute("UPDATE remote_numbers SET name = %s WHERE remote_number = %s", (name, remote_number))
     self.connection.commit()
+
+  def get_bot_account_id(self):
+    self.cursor.execute("SELECT id FROM accounts WHERE canonicalized_phone_number = '+0'", ( canonicalized_phone_number, ))
+    row = self.cursor.fetchone()
+    if not row:
+      self.cursor.execute("""
+        INSERT INTO accounts (name, canonicalized_phone_number) VALUES ('auto-response', '+0') RETURNING id
+       """)
+      return self.cursor.fetchone()[0]
+
+    return row[0]
