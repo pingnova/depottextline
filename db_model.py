@@ -99,8 +99,6 @@ class DBModel:
       ORDER BY last_message_date DESC;
     """)
 
-    
-
     return list(map(
       lambda x: dict(name=x[0], remoteNumber=x[1], sentBy=x[2], status=x[3], body=x[4], date=self.ensure_datetime_is_utc(x[5])),
       self.cursor.fetchall()
@@ -223,7 +221,7 @@ class DBModel:
     self.connection.commit()
 
   def get_bot_account_id(self):
-    self.cursor.execute("SELECT id FROM accounts WHERE canonicalized_phone_number = '+0'")
+    self.cursor.execute("SELECT id FROM accounts WHERE canonicalized_phone_number = 'auto-response'")
     row = self.cursor.fetchone()
     if not row:
       self.cursor.execute("""
