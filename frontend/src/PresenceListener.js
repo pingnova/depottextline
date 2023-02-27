@@ -36,21 +36,17 @@ function PresenceListener() {
     document.addEventListener("mousemove", userIsPresent);
     document.addEventListener("wheel", userIsPresent);
 
-    // fire the event on navigation 
-    // https://stackoverflow.com/questions/3522090/event-when-window-location-href-changes
-    let oldHref = document.location.href;
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(() => {
-        if (oldHref !== document.location.href) {
-          oldHref = document.location.href;
-          userIsPresent();
-        }
-      });
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    let lastHref = document.location.href;
 
     const interval = setInterval(
       () => {
+        // fire the event on navigation
+        if (lastHref !== document.location.href) {
+          lastHref = document.location.href;
+          userIsPresent();
+          return
+        }
+
         const lastUpdate = lastUpdateByPath[window.location.pathname];
         const now = new Date().getTime();
         if((now - lastUpdate) > (presenceTimeoutSeconds+1) * 1000 && (now-lastIdleUpdate) > presenceTimeoutSeconds*1000) {
