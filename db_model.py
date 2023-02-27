@@ -225,7 +225,7 @@ class DBModel:
     row = self.cursor.fetchone()
     if not row:
       self.cursor.execute("""
-        INSERT INTO accounts (name, canonicalized_phone_number) VALUES ('auto-response', '+0') RETURNING id
+        INSERT INTO accounts (name, lower_case_email, canonicalized_phone_number) VALUES ('auto-response', 'auto-response', 'auto-response') RETURNING id
        """)
       return self.cursor.fetchone()[0]
 
