@@ -5,6 +5,7 @@ import { SessionContext } from './Session';
 
 const lastUpdateByPath = {};
 let lastIdleUpdate = new Date().getTime();
+let lastIdleIntervalFired = new Date().getTime();
 const presenceTimeoutSeconds = 10;
 
 function PresenceListener() {
@@ -53,10 +54,10 @@ function PresenceListener() {
         const lastUpdate = lastUpdateByPath[window.location.pathname];
         const now = new Date().getTime();
         if((now - lastUpdate) > (presenceTimeoutSeconds+1) * 1000 && (now-lastIdleUpdate) > presenceTimeoutSeconds*1000) {
-          // if the time since the last idle update is really long, 
+          // if the time since the last interval is really long, 
           // that means the app was backgrounded and the interval was not firing
           // since its firing now, this is an indication that the user clicked on the app!
-          const justReturnedFromBrowserSleep = (now-lastIdleUpdate) > presenceTimeoutSeconds*2*1000;
+          const justReturnedFromBrowserSleep = (now-lastIdleIntervalFired) > presenceTimeoutSeconds*1000;
 
           lastIdleUpdate = now;
 
@@ -66,6 +67,7 @@ function PresenceListener() {
             postPresenceToServer(false);
           }
         }
+        lastIdleIntervalFired = now;
       }, 
       1000
     );
