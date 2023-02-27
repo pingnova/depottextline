@@ -52,11 +52,13 @@ function SessionContextComponent({loading, setLoading, setFlashMessage, children
           }, true).then(() => {
             session.account.name = newName;
             session.logIn(session.account);
+          }).finally(() => {
+            didPromptForUsername = false;
           });
+        } else {
+          didPromptForUsername = false;
         }
       }, 500);
-
-
     },
     authenticatedFetch: (url, options, displayLoader) => {
       if(displayLoader) {
