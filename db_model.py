@@ -221,7 +221,7 @@ class DBModel:
     self.connection.commit()
 
   def get_bot_account_id(self):
-    self.cursor.execute("SELECT id FROM accounts WHERE canonicalized_phone_number = '+0'", ( canonicalized_phone_number, ))
+    self.cursor.execute("SELECT id FROM accounts WHERE canonicalized_phone_number = '+0'")
     row = self.cursor.fetchone()
     if not row:
       self.cursor.execute("""
