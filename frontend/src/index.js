@@ -1,6 +1,6 @@
 import { render } from 'preact';
 import { Router } from 'preact-router';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 
 import './index.css';
 import { SessionContextComponent } from './Session.js'
@@ -8,6 +8,7 @@ import { ModalContextComponent } from './Modal.js'
 import ConversationsList from './ConversationsList.js';
 import Conversation from './Conversation.js';
 import Login from './Login.js';
+import PresenceListener from './PresenceListener.js';
 
 const Main = () => {
 
@@ -17,6 +18,7 @@ const Main = () => {
   return (
     <ModalContextComponent>
     <SessionContextComponent loading={loading} setLoading={setLoading} setFlashMessage={setFlashMessage}>
+      <PresenceListener/>
       {flashMessage != "" && <div className="flash">{flashMessage}</div>}
       <Router>
         <ConversationsList path="/" />

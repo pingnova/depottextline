@@ -114,7 +114,17 @@ def send_sms(remote_number):
   return jsonify({'ok': True}), 200
 
 
+@bp.route("/presence", methods=['POST'])
+@account_required
+def presence():
+  request_body = request.json
+  if 'path' not in request_body:
+    return jsonify({'error': "'path' field is required"}), 400
 
+  if 'active' not in request_body:
+    return jsonify({'error': "'active' field is required"}), 400
+
+  current_app.logger.info(f"presence: account_id={session['account_id']} path={request_body['path']} active={request_body['active']}")
 
 
 # "joinerater" (joining iterator) pattern, zip two sorted lists of dict objects together into a single sorted list
