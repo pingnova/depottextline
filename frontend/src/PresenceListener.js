@@ -10,19 +10,22 @@ const presenceTimeoutSeconds = 10;
 function PresenceListener() {
 
   const session = useContext(SessionContext);
+
+  const postPresenceToServer = (active) => session.authenticatedFetch(
+    '/api/presence',
+    {
+      method: "POST",
+      body: JSON.stringify({ path: window.location.pathname, active }),
+      headers:  {"Content-type": "application/json"}
+    }
+  );
+
   const userIsPresent = () => {
     const lastUpdate = lastUpdateByPath[window.location.pathname];
     const now = new Date().getTime();
     if(!lastUpdate || (now - lastUpdate) > presenceTimeoutSeconds * 1000) {
       lastUpdateByPath[window.location.pathname] = now;
-      session.authenticatedFetch(
-        '/api/presence',
-        {
-          method: "POST",
-          body: JSON.stringify({ path: window.location.pathname, active: true }),
-          headers:  {"Content-type": "application/json"}
-        }
-      )
+      postPresenceToServer(true);
     }
   };
 
@@ -50,15 +53,18 @@ function PresenceListener() {
         const lastUpdate = lastUpdateByPath[window.location.pathname];
         const now = new Date().getTime();
         if((now - lastUpdate) > (presenceTimeoutSeconds+1) * 1000 && (now-lastIdleUpdate) > presenceTimeoutSeconds*1000) {
+          // if the time since the last idle update is really long, 
+          // that means the app was backgrounded and the interval was not firing
+          // since its firing now, this is an indication that the user clicked on the app!
+          const justReturnedFromBrowserSleep = (now-lastIdleUpdate) > presenceTimeoutSeconds*2*1000;
+
           lastIdleUpdate = now;
-          session.authenticatedFetch(
-            '/api/presence',
-            {
-              method: "POST",
-              body: JSON.stringify({ path: window.location.pathname, active: false }),
-              headers:  {"Content-type": "application/json"}
-            }
-          )
+
+          if(justReturnedFromBrowserSleep) {
+            userIsPresent();
+          } else {
+            postPresenceToServer(false);
+          }
         }
       }, 
       1000

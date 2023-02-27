@@ -124,8 +124,9 @@ def presence():
   if 'active' not in request_body:
     return jsonify({'error': "'active' field is required"}), 400
 
-  current_app.logger.info(f"presence: account_id={session['account_id']} path={request_body['path']} active={request_body['active']}")
+  #current_app.logger.info(f"presence: account_id={session['account_id']} path={request_body['path']} active={request_body['active']}")
 
+  return jsonify({'ok': True}), 200
 
 # "joinerater" (joining iterator) pattern, zip two sorted lists of dict objects together into a single sorted list
 def joinerate(list_a, list_b, sorted_by_key):

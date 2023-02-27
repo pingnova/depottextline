@@ -31,7 +31,7 @@ class DBModel:
   def get_login_token(self, lower_case_email, canonicalized_phone_number, duration):
  
     account_id = self.get_account_id(lower_case_email, canonicalized_phone_number)
-    current_app.logger.info(lower_case_email+ "account_id" + str(account_id) if account_id else "none")
+    current_app.logger.info("get_login_token: "+ lower_case_email+ " account_id=" + str(account_id) if account_id else "none")
     if account_id == None:
       self.cursor.execute("""
         INSERT INTO accounts (name, lower_case_email, canonicalized_phone_number) VALUES (%s, %s, %s) RETURNING id
