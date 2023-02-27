@@ -166,13 +166,15 @@ class DBModel:
         (remote_number, "", sent_by_account_id, body)
       )
     else:
-      self.cursor.execute("""
-          UPDATE remote_numbers SET last_message_sent_by_account_id = %s, last_message_body = %s, 
-            last_message_date = (NOW() AT TIME ZONE 'utc')
-          WHERE remote_number = %s
-        """,
-        (sent_by_account_id, body, remote_number)
-      )
+      bot_account_id = self.get_bot_account_id()
+      if sent_by_account_id != bot_account_id:
+        self.cursor.execute("""
+            UPDATE remote_numbers SET last_message_sent_by_account_id = %s, last_message_body = %s, 
+              last_message_date = (NOW() AT TIME ZONE 'utc')
+            WHERE remote_number = %s
+          """,
+          (sent_by_account_id, body, remote_number)
+        )
 
     self.cursor.execute("""
         INSERT INTO messages (sid, remote_number, sent_by_account_id, body) VALUES (%s, %s, %s, %s)
