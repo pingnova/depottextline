@@ -97,8 +97,10 @@ class DBModel:
       ORDER BY last_message_date DESC;
     """)
 
+    
+
     return list(map(
-      lambda x: dict(name=x[0], remoteNumber=x[1], sentBy=x[2], status=x[3], body=x[4], date=x[5]),
+      lambda x: dict(name=x[0], remoteNumber=x[1], sentBy=x[2], status=x[3], body=x[4], date=ensure_datetime_is_utc(x[5])),
       self.cursor.fetchall()
     ))
 
@@ -149,7 +151,7 @@ class DBModel:
     if not row:
       return None
 
-    return row[0]
+    return ensure_datetime_is_utc(row[0])
 
   def save_message(self, sid, remote_number, sent_by_account_id, body):
 
@@ -226,3 +228,6 @@ class DBModel:
       return self.cursor.fetchone()[0]
 
     return row[0]
+
+  def ensure_datetime_is_utc(self, datetime):
+    return datetime.replace(tzinfo=timezone.utc)
