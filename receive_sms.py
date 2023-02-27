@@ -64,6 +64,7 @@ def receive_sms():
       'type': "conversation_event",
       'remoteNumber': remote_number,
       'sentBy': bot_account_id,
+      'autoResponse': True,
       'body': auto_response_message,
       'date': datetime.now(timezone.utc)
     })

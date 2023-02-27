@@ -17,6 +17,12 @@ function ConversationsList() {
 
   EventHub.subscriptions.ConversationsList = {
     'conversation_event': (eventData) => {
+
+      // don't update conversation previews with auto responses 
+      if(eventData.autoResponse) {
+        return
+      }
+
       const matchingConversations = conversations.filter(x => x.remoteNumber == eventData.remoteNumber);
       if(matchingConversations.length == 1) {
         matchingConversations[0].sentBy = eventData.sentBy
