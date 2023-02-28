@@ -11,7 +11,7 @@ from db_model import DBModel
 from shared import my_exec_info_message
 
 # increment this to enable new database changes written to sql files in the schema_migrations folder
-desiredSchemaVersion = 4
+desiredSchemaVersion = 5
 
 def init_app(app):
 

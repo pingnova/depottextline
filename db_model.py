@@ -225,11 +225,37 @@ class DBModel:
     row = self.cursor.fetchone()
     if not row:
       self.cursor.execute("""
-        INSERT INTO accounts (name, lower_case_email, canonicalized_phone_number) VALUES ('auto-response', 'auto-response', 'auto-response') RETURNING id
-       """)
-      return self.cursor.fetchone()[0]
+        INSERT INTO accounts (name, lower_case_email, canonicalized_phone_number) 
+        VALUES ('auto-response', 'auto-response', 'auto-response') RETURNING id
+      """)
+
+      account_id = self.cursor.fetchone()[0]
+      self.connection.commit()
+      return account_id
 
     return row[0]
+
+  def set_presence(self, account_id, path, active):
+    self.cursor.execute("""
+        UPDATE accounts SET presence_path = %s, presence_active = %s, last_presence = (NOW() AT TIME ZONE 'utc') 
+        WHERE id = %s
+      """,
+      (path, active, account_id)
+    )
+    self.connection.commit()
+
+
+  def get_presence(self):
+    self.cursor.execute("""
+        SELECT id, presence_path, presence_active, last_presence, name FROM accounts 
+        WHERE last_presence > ((NOW() AT TIME ZONE 'utc') - INTERVAL '30 seconds')
+    """)
+    
+    return list(map(
+      lambda x: dict(account_id=x[0], path=x[1], active=x[2], date=self.ensure_datetime_is_utc(x[3]), name=x[4]),
+      self.cursor.fetchall()
+    ))
+
 
   def ensure_datetime_is_utc(self, datetime):
     return datetime.replace(tzinfo=timezone.utc)

@@ -92,3 +92,34 @@
 .send-button {
   padding-left: 0.5rem;
 }
+
+.presence span {
+  font-size: 0.9em;
+  white-space: nowrap;
+} 
+
+.presence-container {
+  flex-wrap: wrap;
+  padding: 0 3px;
+  border: 1px solid #aaa;
+  border-radius: 100px;
+  margin-top: 5px;
+}
+
+.presence {
+  background: #cacaca;
+  border-radius: 0.8em;
+  padding-left: 2px;
+  padding-right: 2px;
+  flex-wrap: nowrap;
+}
+
+.presence-mini {
+  font-size: .9em;
+  position: relative;
+  left: -0.4rem;
+  top: 0.2rem;
+  line-height: 1em;
+  background: #0006;
+  border-radius: 100%;
+}

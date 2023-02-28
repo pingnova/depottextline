@@ -7,6 +7,7 @@ import shareImage from './share.png'
 import EventHub from './EventHub';
 import { SessionContext } from './Session';
 import Avatar from './Avatar';
+import PresenceDisplay from './PresenceDisplay.js'
 import {  beautifyPhoneNumber, getTimeSince } from './uiFunctions.js';
 
 function ConversationsList() {
@@ -90,6 +91,7 @@ function ConversationsList() {
               <img src={shareImage}></img>
             </div>
           </div>
+          <PresenceDisplay path={'/'} extended={window.innerWidth > 700}/>
           <span class="double-spaced clickable" onClick={session.promptForUsername}>
             {session.account?.name || "Anonymous"}
           </span>
@@ -119,7 +121,7 @@ function ConversationsList() {
               {x.sentBy ? (<span class="small-text">{x.sentBy}:&nbsp; </span>) : (<>📥&nbsp; </>)}
               <span class="small-text">{x.body}</span>
               </span>
-              <span class="small-text"> {/* TODO presence here */}</span>
+              <PresenceDisplay path={`/${x.remoteNumber}/convo`}/>
             </div>
           </div>
         </div>

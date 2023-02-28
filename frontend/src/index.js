@@ -8,7 +8,7 @@ import { ModalContextComponent } from './Modal.js'
 import ConversationsList from './ConversationsList.js';
 import Conversation from './Conversation.js';
 import Login from './Login.js';
-import PresenceListener from './PresenceListener.js';
+import { PresenceContextComponent } from './Presence.js';
 
 const Main = () => {
 
@@ -18,7 +18,8 @@ const Main = () => {
   return (
     <ModalContextComponent>
     <SessionContextComponent loading={loading} setLoading={setLoading} setFlashMessage={setFlashMessage}>
-      <PresenceListener/>
+    <PresenceContextComponent>
+
       {flashMessage != "" && <div className="flash">{flashMessage}</div>}
       <Router>
         <ConversationsList path="/" />
@@ -28,6 +29,8 @@ const Main = () => {
       <div class="loader-container" style={{display: loading > 0 ? "block" : "none" }}>
         <div class="loader">loading</div>
       </div>
+
+    </PresenceContextComponent>
     </SessionContextComponent>
     </ModalContextComponent>
   );

@@ -5,9 +5,9 @@ import './Avatar.css';
 import anon_avatar from './anon.png';
 import { getRandomColor } from './uiFunctions.js';
 
-function Avatar(props) {
+function Avatar({identityForColor, name, className, onClick}) {
 
-  const color = props.identityForColor ? getRandomColor(props.identityForColor) : "#ccc";
+  const color = identityForColor ? getRandomColor(identityForColor) : "#ccc";
   const textColor = tinycolor(color).darken(80).toHexString();
 
   const avatarContent = (name, style) => {
@@ -27,9 +27,9 @@ function Avatar(props) {
   }
 
   return (
-    <div class={`avatar-container ${props.className}`} onClick={props.onClick || (()=>{})} >
+    <div class={`avatar-container ${className || ""}`} onClick={onClick || (()=>{})} >
       <div class="avatar" style={{backgroundColor: color}}>
-        {avatarContent(props.name, {color: textColor})}
+        {avatarContent(name, {color: textColor})}
       </div>
     </div>
   );
